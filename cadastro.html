@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel · VB Delivery</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Bangers&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=1">
+<style>
+  .abas { display: flex; gap: .5rem; padding: 1rem 5vw .5rem; }
+  .aba-btn { flex:1; padding:.7rem; border-radius:12px; border:1px solid var(--stone); background:var(--superficie); color:var(--ink-soft); font-weight:700; font-size:.82rem; }
+  .aba-btn.ativa { background:var(--terracotta); color:#1c0800; border-color:transparent; }
+  .painel-lista { padding: 0 5vw 2rem; display:flex; flex-direction:column; gap:.6rem; }
+  .linha-crud { display:flex; align-items:center; justify-content:space-between; gap:.6rem; padding:.7rem .9rem; border-radius:12px; background:var(--superficie); border:1px solid var(--stone); font-size:.85rem; }
+  .linha-crud button { border:none; background:none; color:var(--ink-faint); font-size:.78rem; font-weight:700; }
+  .linha-crud button.rm { color:var(--terracotta); }
+  .form-card { margin: 0 5vw 1rem; padding: 1rem; border-radius: var(--radius); background: var(--superficie); border: 1px solid var(--stone); }
+  .form-card h3 { font-size: .82rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); margin-bottom: .8rem; }
+  .checks { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:.8rem; font-size:.82rem; }
+  .checks label { display:flex; align-items:center; gap:.4rem; }
+  .status-badge { font-size:.68rem; font-weight:700; text-transform:uppercase; padding:.25rem .55rem; border-radius:999px; background:rgba(var(--terracotta-rgb),.15); color:var(--terracotta); }
+</style>
+</head>
+<body>
+<header id="topbar">
+  <div class="tb-brand" id="tbBrand">Painel</div>
+  <button type="button" class="vb-btn secundario" id="sairBtn" style="width:auto;padding:.4rem .8rem;font-size:.72rem;">Sair</button>
+</header>
+
+<main id="semSessao" class="container oculto" style="padding-top:3rem;text-align:center;">
+  <p class="hero-sub">Você precisa entrar pra acessar o painel.</p>
+  <a href="criar.html" class="vb-btn" style="margin-top:1rem;display:inline-flex;">Ir pra tela de entrada</a>
+</main>
+
+<main id="semEstab" class="container oculto" style="padding-top:3rem;text-align:center;">
+  <p class="hero-sub">Você ainda não tem um estabelecimento.</p>
+  <a href="criar.html" class="vb-btn" style="margin-top:1rem;display:inline-flex;">Criar meu Delivery</a>
+</main>
+
+<div id="painel" class="oculto">
+  <div class="abas">
+    <button type="button" class="aba-btn ativa" data-aba="cardapio">Cardápio</button>
+    <button type="button" class="aba-btn" data-aba="pedidos">Pedidos</button>
+  </div>
+
+  <section id="abaCardapio">
+    <div class="form-card">
+      <h3>Nova categoria</h3>
+      <div class="vb-field"><input type="text" id="catNome" placeholder="Ex: Tradicionais"></div>
+      <button type="button" class="vb-btn" id="catAddBtn">Adicionar categoria</button>
+    </div>
+    <div class="painel-lista" id="listaCategorias"></div>
+
+    <div class="form-card">
+      <h3 id="itemFormTitulo">Novo item</h3>
+      <input type="hidden" id="itemId">
+      <div class="vb-field"><input type="text" id="itemNome" placeholder="Nome"></div>
+      <div class="vb-field"><input type="text" id="itemDescricao" placeholder="Descrição (opcional)"></div>
+      <div class="vb-field"><input type="number" step="0.01" id="itemPreco" placeholder="Preço"></div>
+      <div class="vb-field"><input type="url" id="itemFoto" placeholder="URL da foto (opcional)"></div>
+      <div class="vb-field"><select id="itemCategoria"><option value="">Sem categoria</option></select></div>
+      <div class="checks">
+        <label><input type="checkbox" id="itemMeioAMeio"> Permite meio a meio</label>
+        <label><input type="checkbox" id="itemAtivo" checked> Ativo</label>
+      </div>
+      <button type="button" class="vb-btn" id="itemSalvarBtn">Salvar item</button>
+    </div>
+    <div class="painel-lista" id="listaItens"></div>
+
+    <div class="form-card">
+      <h3>Nova borda</h3>
+      <div class="vb-field"><input type="text" id="bordaNome" placeholder="Ex: Catupiry"></div>
+      <div class="vb-field"><input type="number" step="0.01" id="bordaPreco" placeholder="Preço adicional"></div>
+      <button type="button" class="vb-btn" id="bordaAddBtn">Adicionar borda</button>
+    </div>
+    <div class="painel-lista" id="listaBordas"></div>
+  </section>
+
+  <section id="abaPedidos" class="oculto">
+    <div class="painel-lista" id="listaPedidos"></div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-client.js?v=1"></script>
+<script src="assets/js/cadastro.js?v=1"></script>
+</body>
+</html>

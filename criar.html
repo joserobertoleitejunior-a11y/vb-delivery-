@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Criar meu Delivery · VB Delivery</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Bangers&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=1">
+</head>
+<body>
+<header id="topbar">
+  <div class="tb-brand">VB Delivery</div>
+</header>
+
+<main class="container" style="padding-top:2.4rem;max-width:420px;">
+  <h1 class="hero-titulo" style="font-size:1.8rem;text-align:left;margin-bottom:.3rem;">Criar meu Delivery</h1>
+  <p class="hero-sub" style="text-align:left;margin:0 0 1.6rem;">Cardápio digital + pedido pelo WhatsApp, no ar em poucos minutos.</p>
+
+  <section id="blocoAuth">
+    <div class="vb-field">
+      <label for="authEmail">E-mail</label>
+      <input type="email" id="authEmail" autocomplete="email">
+    </div>
+    <div class="vb-field">
+      <label for="authSenha">Senha</label>
+      <input type="password" id="authSenha" autocomplete="current-password">
+    </div>
+    <p id="authMsg" style="font-size:.82rem;color:var(--ink-soft);min-height:1.2em;"></p>
+    <button type="button" class="vb-btn" id="entrarBtn">Entrar</button>
+    <button type="button" class="vb-btn secundario" id="criarContaBtn" style="margin-top:.6rem;">Criar conta nova</button>
+  </section>
+
+  <section id="blocoWizard" class="oculto">
+    <div class="vb-field">
+      <label for="wNome">Nome do estabelecimento</label>
+      <input type="text" id="wNome" placeholder="Ex: Pizza em Dobro">
+    </div>
+    <div class="vb-field">
+      <label for="wSlug">Endereço do site</label>
+      <input type="text" id="wSlug" placeholder="pizza-em-dobro">
+    </div>
+    <div class="vb-field">
+      <label for="wCidade">Cidade</label>
+      <input type="text" id="wCidade" placeholder="Itapetininga">
+    </div>
+    <div class="vb-field">
+      <label for="wSegmento">Segmento</label>
+      <select id="wSegmento">
+        <option value="pizzaria">Pizzaria</option>
+        <option value="petshop">Petshop</option>
+        <option value="mercado">Mercado / conveniência</option>
+        <option value="lanchonete">Lanchonete</option>
+        <option value="acaiteria">Açaiteria</option>
+        <option value="hamburgueria">Hamburgueria</option>
+        <option value="outro">Outro</option>
+      </select>
+    </div>
+    <div class="vb-field">
+      <label for="wWhats">WhatsApp (com DDD)</label>
+      <input type="tel" id="wWhats" placeholder="15999999999">
+    </div>
+    <p id="wizardMsg" style="font-size:.82rem;color:var(--ink-soft);min-height:1.2em;"></p>
+    <button type="button" class="vb-btn" id="criarEstabBtn">Criar meu cardápio</button>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-client.js?v=1"></script>
+<script src="assets/js/criar.js?v=1"></script>
+</body>
+</html>
