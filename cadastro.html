@@ -2,17 +2,19 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Painel · VB Delivery</title>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Bangers&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/styles.css?v=1">
 <style>
   .abas { display: flex; gap: .5rem; padding: 1rem 5vw .5rem; }
-  .aba-btn { flex:1; padding:.7rem; border-radius:12px; border:1px solid var(--stone); background:var(--superficie); color:var(--ink-soft); font-weight:700; font-size:.82rem; }
+  .aba-btn { flex:1; padding:.7rem; border-radius:12px; border:1px solid var(--stone); background:var(--superficie); color:var(--ink-soft); font-weight:700; font-size:.82rem; transition:background .2s ease,color .2s ease,transform .1s ease; }
   .aba-btn.ativa { background:var(--terracotta); color:#1c0800; border-color:transparent; }
+  .aba-btn:active { transform:scale(0.97); }
   .painel-lista { padding: 0 5vw 2rem; display:flex; flex-direction:column; gap:.6rem; }
-  .linha-crud { display:flex; align-items:center; justify-content:space-between; gap:.6rem; padding:.7rem .9rem; border-radius:12px; background:var(--superficie); border:1px solid var(--stone); font-size:.85rem; }
-  .linha-crud button { border:none; background:none; color:var(--ink-faint); font-size:.78rem; font-weight:700; }
+  .linha-crud { display:flex; align-items:center; justify-content:space-between; gap:.6rem; padding:.7rem .9rem; border-radius:12px; background:var(--superficie); border:1px solid var(--stone); font-size:.85rem; animation: vbEntra 0.3s ease both; }
+  .linha-crud button { border:none; background:none; color:var(--ink-faint); font-size:.78rem; font-weight:700; transition:opacity .15s ease; }
+  .linha-crud button:hover { opacity:.7; }
   .linha-crud button.rm { color:var(--terracotta); }
   .form-card { margin: 0 5vw 1rem; padding: 1rem; border-radius: var(--radius); background: var(--superficie); border: 1px solid var(--stone); }
   .form-card h3 { font-size: .82rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); margin-bottom: .8rem; }
@@ -74,6 +76,27 @@
       <button type="button" class="vb-btn" id="bordaAddBtn">Adicionar borda</button>
     </div>
     <div class="painel-lista" id="listaBordas"></div>
+
+    <div class="form-card">
+      <h3>Novo combo</h3>
+      <div class="vb-field"><input type="text" id="comboNome" placeholder="Ex: Combo 2 pizzas grandes"></div>
+      <div class="vb-field"><input type="number" step="0.01" id="comboPreco" placeholder="Preço fixo do combo"></div>
+      <div class="vb-field">
+        <label style="display:block;font-size:.78rem;font-weight:700;color:var(--ink-soft);margin-bottom:.35rem;">Quantos sabores o cliente escolhe</label>
+        <select id="comboQtdSabores">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
+      </div>
+      <div class="vb-field">
+        <label style="display:block;font-size:.78rem;font-weight:700;color:var(--ink-soft);margin-bottom:.35rem;">Itens que entram no combo</label>
+        <div id="comboItensChecklist" class="checks" style="flex-direction:column;gap:.5rem;"></div>
+      </div>
+      <button type="button" class="vb-btn" id="comboAddBtn">Adicionar combo</button>
+    </div>
+    <div class="painel-lista" id="listaCombos"></div>
   </section>
 
   <section id="abaPedidos" class="oculto">

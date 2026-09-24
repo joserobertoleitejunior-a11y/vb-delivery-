@@ -7,6 +7,7 @@
   var categorias = [];
   var itens = [];
   var bordas = [];
+  var combos = [];
 
   function formatarPreco(n) { return 'R$ ' + Number(n || 0).toFixed(2).replace('.', ','); }
   function escapeHtml(v) {
@@ -54,18 +55,22 @@
 
   /* === Cardápio === */
   async function carregarCardapio() {
-    var [rc, ri, rb] = await Promise.all([
+    var [rc, ri, rb, rco] = await Promise.all([
       window.db.rpc('delivery_admin_listar_categorias', { p_estabelecimento_id: estab.id }),
       window.db.rpc('delivery_admin_listar_itens', { p_estabelecimento_id: estab.id }),
-      window.db.rpc('delivery_admin_listar_bordas', { p_estabelecimento_id: estab.id })
+      window.db.rpc('delivery_admin_listar_bordas', { p_estabelecimento_id: estab.id }),
+      window.db.rpc('delivery_admin_listar_combos', { p_estabelecimento_id: estab.id })
     ]);
     categorias = rc.data || [];
     itens = ri.data || [];
     bordas = rb.data || [];
+    combos = rco.data || [];
     renderizarCategorias();
     renderizarSelectCategorias();
     renderizarItens();
     renderizarBordas();
+    renderizarComboChecklist();
+    renderizarCombos();
   }
 
   function renderizarCategorias() {
@@ -135,6 +140,31 @@
     });
   }
 
+  function renderizarComboChecklist() {
+    $('comboItensChecklist').innerHTML = itens.map(function (i) {
+      return '<label><input type="checkbox" value="' + i.id + '" data-combo-item> ' + escapeHtml(i.nome) + ' — ' + formatarPreco(i.preco) + '</label>';
+    }).join('') || '<p class="hero-sub" style="text-align:left;">Cadastre itens antes de criar um combo.</p>';
+  }
+
+  function renderizarCombos() {
+    $('listaCombos').innerHTML = combos.map(function (c) {
+      var qtdSelecionados = (c.itens_permitidos || []).length;
+      return (
+        '<div class="linha-crud">' +
+          '<span>' + escapeHtml(c.nome) + ' — ' + formatarPreco(c.preco) + ' (' + c.qtd_sabores + ' sabor' + (c.qtd_sabores > 1 ? 'es' : '') + ' entre ' + qtdSelecionados + ' opções)</span>' +
+          '<button type="button" class="rm" data-rm-combo="' + c.id + '">remover</button>' +
+        '</div>'
+      );
+    }).join('') || '<p class="hero-sub" style="text-align:left;">Nenhum combo ainda.</p>';
+    document.querySelectorAll('[data-rm-combo]').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        if (!confirm('Remover combo?')) return;
+        await window.db.rpc('delivery_admin_remover_combo', { p_id: btn.getAttribute('data-rm-combo'), p_estabelecimento_id: estab.id });
+        carregarCardapio();
+      });
+    });
+  }
+
   function ligarFormsCardapio() {
     $('catAddBtn').addEventListener('click', async function () {
       var nome = $('catNome').value.trim();
@@ -167,6 +197,21 @@
       if (!nome) return;
       await window.db.rpc('delivery_admin_salvar_borda', { p_id: null, p_estabelecimento_id: estab.id, p_nome: nome, p_preco: preco, p_ativo: true, p_ordem: bordas.length });
       $('bordaNome').value = ''; $('bordaPreco').value = '';
+      carregarCardapio();
+    });
+
+    $('comboAddBtn').addEventListener('click', async function () {
+      var nome = $('comboNome').value.trim();
+      var preco = parseFloat($('comboPreco').value);
+      var qtdSabores = parseInt($('comboQtdSabores').value, 10);
+      var selecionados = Array.prototype.map.call(document.querySelectorAll('[data-combo-item]:checked'), function (c) { return c.value; });
+      if (!nome || isNaN(preco)) { alert('Preenche nome e preço do combo.'); return; }
+      if (selecionados.length < qtdSabores) { alert('Marca pelo menos ' + qtdSabores + ' itens pra esse combo.'); return; }
+      await window.db.rpc('delivery_admin_salvar_combo', {
+        p_id: null, p_estabelecimento_id: estab.id, p_nome: nome, p_preco: preco,
+        p_itens_permitidos: selecionados, p_qtd_sabores: qtdSabores, p_ativo: true, p_ordem: combos.length
+      });
+      $('comboNome').value = ''; $('comboPreco').value = '';
       carregarCardapio();
     });
   }
