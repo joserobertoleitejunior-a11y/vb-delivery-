@@ -1,0 +1,89 @@
+/* Template NEON — lanchonete/hamburgueria da madrugada.
+   Letreiro Bungee piscando em neon rosa, grade retrô em perspectiva no
+   fundo, detalhes em ciano brilhante. */
+:root {
+  --bg: #07060d;
+  --bg-2: #0e0c19;
+  --surface: #120f22;
+  --surface-2: #1a1630;
+  --line: rgba(255, 255, 255, 0.09);
+  --ink: #f5f1ff;
+  --ink-soft: rgba(245, 241, 255, 0.7);
+  --ink-faint: rgba(245, 241, 255, 0.42);
+  --accent: #ff2e88;
+  --accent-2: #d8126a;
+  --accent-rgb: 255, 46, 136;
+  --on-accent: #1a0010;
+  --ok: #3cffb4;
+  --ok-rgb: 60, 255, 180;
+  --pop: #20f0ff;
+  --font-body: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Bungee', 'Space Grotesk', sans-serif;
+  --display-weight: 400;
+  --display-transform: uppercase;
+  --display-spacing: 0.02em;
+  --radius: 14px;
+  --radius-lg: 18px;
+  --topbar-bg: rgba(7, 6, 13, 0.85);
+  --cart-bg: linear-gradient(100deg, var(--accent), #9b2eff);
+  --cart-ink: #ffffff;
+}
+
+/* grade retrô em perspectiva + brilho no horizonte */
+.bg-deco {
+  background: radial-gradient(ellipse 80% 40% at 50% 100%, rgba(155, 46, 255, 0.28), transparent 70%), var(--bg);
+}
+.bg-deco::before {
+  content: '';
+  position: absolute; left: -50%; right: -50%; bottom: -10%; height: 55%;
+  background-image:
+    linear-gradient(rgba(255, 46, 136, 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(32, 240, 255, 0.28) 1px, transparent 1px);
+  background-size: 48px 48px;
+  transform: perspective(360px) rotateX(62deg);
+  transform-origin: 50% 100%;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 60%);
+  mask-image: linear-gradient(180deg, transparent, #000 60%);
+  animation: neonGrade 3.5s linear infinite;
+  opacity: 0.55;
+}
+@keyframes neonGrade { from { background-position: 0 0; } to { background-position: 0 48px; } }
+
+.hero-eyebrow { color: var(--pop); text-shadow: 0 0 10px rgba(32, 240, 255, 0.7); }
+.hero-titulo {
+  color: #fff;
+  text-shadow: 0 0 6px #fff, 0 0 18px var(--accent), 0 0 38px var(--accent), 0 0 70px rgba(255, 46, 136, 0.6);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-titulo { animation: neonPisca 5s linear infinite; }
+}
+@keyframes neonPisca {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
+  20%, 24%, 55% { opacity: 0.45; }
+}
+.hero-logo { box-shadow: 0 0 0 2px var(--pop), 0 0 24px rgba(32, 240, 255, 0.6); }
+.chip-info { border-color: rgba(32, 240, 255, 0.35); color: var(--pop); background: rgba(32, 240, 255, 0.06); }
+
+.nav-pill { border-color: rgba(255, 46, 136, 0.5); color: var(--accent); background: transparent; }
+.nav-pill.ativo, .nav-pill:hover { background: var(--accent); color: #fff; box-shadow: 0 0 16px rgba(255, 46, 136, 0.7); }
+
+.cardapio-categoria-titulo { color: var(--pop); text-shadow: 0 0 12px rgba(32, 240, 255, 0.6); font-size: 1.2rem; }
+
+.item-card { background: linear-gradient(160deg, var(--surface-2), var(--surface)); }
+.item-card:hover { border-color: rgba(255, 46, 136, 0.55); box-shadow: 0 0 22px rgba(255, 46, 136, 0.2); }
+.item-mono { background: #0b0916; color: var(--accent); text-shadow: 0 0 12px var(--accent); border: 1px solid rgba(255, 46, 136, 0.4); }
+.item-preco { color: var(--pop); text-shadow: 0 0 10px rgba(32, 240, 255, 0.55); }
+.item-add { background: var(--accent); color: #fff; box-shadow: 0 0 16px rgba(255, 46, 136, 0.7); }
+.item-card.no-carrinho .item-add { background: var(--ok); color: #03281b; box-shadow: 0 0 16px rgba(60, 255, 180, 0.6); }
+
+.especial-card { background: rgba(255, 46, 136, 0.06); border: 1px solid rgba(255, 46, 136, 0.6); box-shadow: 0 0 20px rgba(255, 46, 136, 0.18), inset 0 0 20px rgba(255, 46, 136, 0.08); }
+.especial-icone { background: transparent; border: 1.5px solid var(--pop); color: var(--pop); box-shadow: 0 0 12px rgba(32, 240, 255, 0.5); }
+.especial-preco { color: var(--pop); }
+.cart-resumo { box-shadow: 0 0 28px rgba(255, 46, 136, 0.55), 0 12px 30px rgba(0, 0, 0, 0.4); }
+.cart-qtd { background: rgba(255, 255, 255, 0.2); }
+.sheet-painel { border-top: 1px solid rgba(255, 46, 136, 0.5); box-shadow: 0 -10px 40px rgba(255, 46, 136, 0.18); }
+.sheet-titulo { color: var(--pop); font-size: 1.15rem; }
+.btn { box-shadow: 0 0 18px rgba(255, 46, 136, 0.45); color: #fff; }
+.btn.sec, .btn.whats { box-shadow: none; }
+.btn.whats { color: #062b14; }
+.seg button.ativo { color: #fff; box-shadow: 0 0 14px rgba(255, 46, 136, 0.6); }

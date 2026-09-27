@@ -1,0 +1,83 @@
+/* Template VIDRO — transparente/glassmorphism.
+   Aurora colorida se movendo devagar no fundo, e tudo por cima é vidro
+   fosco translúcido (cards, topo, pílulas, carrinho). */
+:root {
+  --bg: #0c0e22;
+  --bg-2: rgba(22, 24, 52, 0.82);
+  --surface: rgba(255, 255, 255, 0.08);
+  --surface-2: rgba(255, 255, 255, 0.14);
+  --line: rgba(255, 255, 255, 0.16);
+  --ink: #ffffff;
+  --ink-soft: rgba(255, 255, 255, 0.74);
+  --ink-faint: rgba(255, 255, 255, 0.48);
+  --accent: #67e8f9;
+  --accent-2: #22d3ee;
+  --accent-rgb: 103, 232, 249;
+  --on-accent: #06222b;
+  --ok: #86efac;
+  --ok-rgb: 134, 239, 172;
+  --font-body: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Outfit', -apple-system, sans-serif;
+  --display-weight: 700;
+  --display-transform: none;
+  --display-spacing: -0.02em;
+  --radius: 20px;
+  --radius-lg: 26px;
+  --glass: blur(18px) saturate(150%);
+  --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --topbar-bg: rgba(12, 14, 34, 0.45);
+  --cart-bg: rgba(255, 255, 255, 0.16);
+  --cart-ink: #ffffff;
+}
+
+.bg-deco { background: #0c0e22; }
+.bg-deco::before, .bg-deco::after {
+  content: '';
+  position: absolute;
+  width: 110vmax; height: 110vmax;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.95;
+}
+.bg-deco::before {
+  top: -45vmax; left: -45vmax;
+  background: radial-gradient(circle, #7c3aed 0%, rgba(124, 58, 237, 0) 60%), radial-gradient(circle at 70% 70%, #22d3ee 0%, rgba(34, 211, 238, 0) 55%);
+  animation: vidroAurora 22s ease-in-out infinite alternate;
+}
+.bg-deco::after {
+  bottom: -55vmax; right: -50vmax;
+  background: radial-gradient(circle, #f472b6 0%, rgba(244, 114, 182, 0) 58%), radial-gradient(circle at 30% 30%, #6366f1 0%, rgba(99, 102, 241, 0) 55%);
+  animation: vidroAurora 28s ease-in-out infinite alternate-reverse;
+}
+@keyframes vidroAurora { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(12vmax, 10vmax) rotate(40deg); } }
+
+.hero-titulo { font-size: clamp(2.3rem, 10vw, 3.4rem); background: linear-gradient(120deg, #ffffff 20%, #a5f3fc 55%, #f0abfc 90%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero-eyebrow { color: var(--ink-soft); }
+.hero.com-capa .hero-capa::after { background: linear-gradient(180deg, rgba(12, 14, 34, 0.2), rgba(12, 14, 34, 0.55) 55%, rgba(12, 14, 34, 0.9)); }
+.chip-info { border-color: var(--line); color: var(--ink); }
+
+.nav-pills { background: rgba(12, 14, 34, 0.4); }
+.nav-pill { background: var(--surface); border-color: var(--line); color: var(--ink); -webkit-backdrop-filter: var(--glass); backdrop-filter: var(--glass); }
+.nav-pill.ativo, .nav-pill:hover { background: rgba(255, 255, 255, 0.92); color: #0c0e22; }
+
+.cardapio-categoria-titulo { font-size: 1.35rem; }
+.item-card { border-radius: var(--radius); }
+.item-card:hover { border-color: rgba(255, 255, 255, 0.32); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+.item-foto, .item-mono { border-radius: 16px; }
+.item-mono { background: linear-gradient(135deg, rgba(124, 58, 237, 0.55), rgba(34, 211, 238, 0.45)); color: #fff; }
+.item-add { background: rgba(255, 255, 255, 0.92); color: #0c0e22; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25); }
+.item-preco { color: #a5f3fc; }
+
+.especial-card { background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.28); }
+.especial-icone { background: linear-gradient(135deg, #7c3aed, #22d3ee); color: #fff; }
+.cart-resumo { border: 1px solid rgba(255, 255, 255, 0.35); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+.cart-qtd { background: rgba(255, 255, 255, 0.9); color: #0c0e22; }
+.sheet-painel { background: rgba(20, 22, 50, 0.72); -webkit-backdrop-filter: blur(24px) saturate(160%); backdrop-filter: blur(24px) saturate(160%); }
+.sheet-rodape { background: transparent; }
+.opcao, .seg, .campo input, .campo textarea, .qtd, .totais, .pedido-card { -webkit-backdrop-filter: var(--glass); backdrop-filter: var(--glass); }
+.btn { background: rgba(255, 255, 255, 0.92); color: #0c0e22; }
+.btn.sec { background: var(--surface); color: var(--ink); }
+.btn.whats { background: #25d366; color: #062b14; }
+.seg button.ativo, .opcao.ativo .marca { background: rgba(255, 255, 255, 0.92); color: #0c0e22; border-color: transparent; }
+.opcao .marca svg { color: #0c0e22; }
+.toast { background: rgba(255, 255, 255, 0.92); color: #0c0e22; }

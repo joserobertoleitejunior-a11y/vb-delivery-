@@ -1,0 +1,61 @@
+/* Template FORNO — escuro e quente, clima de forno a lenha.
+   Letreiro em Bangers com brilho de brasa, fundo com brasas subindo. */
+:root {
+  --bg: #150a06;
+  --bg-2: #1d0f09;
+  --surface: #241109;
+  --surface-2: #2f170d;
+  --line: rgba(255, 190, 150, 0.1);
+  --ink: #fbece2;
+  --ink-soft: rgba(251, 236, 226, 0.7);
+  --ink-faint: rgba(251, 236, 226, 0.42);
+  --accent: #ff7a3d;
+  --accent-2: #ff5a1f;
+  --accent-rgb: 255, 122, 61;
+  --on-accent: #1c0800;
+  --ok: #8fcf8f;
+  --ok-rgb: 143, 207, 143;
+  --font-body: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Bangers', 'Jost', sans-serif;
+  --display-weight: 400;
+  --display-transform: uppercase;
+  --display-spacing: 0.04em;
+  --topbar-bg: rgba(21, 10, 6, 0.88);
+  --cart-bg: linear-gradient(100deg, var(--accent), var(--accent-2));
+}
+
+.bg-deco {
+  background:
+    radial-gradient(ellipse 70% 45% at 15% 0%, rgba(255, 110, 40, 0.16), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 100% 30%, rgba(255, 60, 20, 0.08), transparent 70%);
+}
+/* brasas subindo */
+.bg-deco::before, .bg-deco::after {
+  content: '';
+  position: absolute; left: 0; right: 0; bottom: -20px; height: 120vh;
+  background-image:
+    radial-gradient(2px 2px at 12% 90%, rgba(255, 170, 90, 0.9), transparent),
+    radial-gradient(1.5px 1.5px at 30% 70%, rgba(255, 120, 50, 0.8), transparent),
+    radial-gradient(2px 2px at 55% 85%, rgba(255, 200, 120, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 78% 60%, rgba(255, 140, 60, 0.8), transparent),
+    radial-gradient(2px 2px at 90% 95%, rgba(255, 180, 90, 0.7), transparent);
+  animation: fornoBrasa 14s linear infinite;
+  opacity: 0.55;
+}
+.bg-deco::after { animation-duration: 21s; animation-delay: -7s; transform: scaleX(-1); opacity: 0.35; }
+@keyframes fornoBrasa { from { transform: translateY(0); } to { transform: translateY(-120vh); } }
+
+.hero-titulo {
+  text-shadow: 3px 3px 0 var(--accent-2), 0 0 42px rgba(var(--accent-rgb), 0.35);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-titulo { animation: fornoGlow 3.4s ease-in-out infinite; }
+}
+@keyframes fornoGlow {
+  0%, 100% { text-shadow: 3px 3px 0 var(--accent-2), 0 0 42px rgba(var(--accent-rgb), 0.3); }
+  50% { text-shadow: 3px 3px 0 var(--accent-2), 0 0 64px rgba(var(--accent-rgb), 0.55); }
+}
+.cardapio-categoria-titulo { color: var(--accent); font-size: 1.45rem; }
+.cardapio-categoria-titulo::after { content: ''; display: block; width: 44px; height: 3px; margin-top: 0.35rem; border-radius: 2px; background: linear-gradient(90deg, var(--accent), transparent); }
+.item-card { background: linear-gradient(160deg, var(--surface-2), var(--surface)); }
+.especial-icone { background: linear-gradient(135deg, #ffb070, var(--accent-2)); }

@@ -1,0 +1,76 @@
+/* Template PATINHAS — petshop divertido.
+   Lilás e menta, patinhas espalhadas no fundo, tudo bem arredondado e
+   com um "pulinho" no toque. */
+:root {
+  --bg: #faf6ff;
+  --bg-2: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f1e9ff;
+  --line: rgba(110, 72, 170, 0.13);
+  --ink: #2c2142;
+  --ink-soft: rgba(44, 33, 66, 0.7);
+  --ink-faint: rgba(44, 33, 66, 0.45);
+  --accent: #7c5cff;
+  --accent-2: #6341f0;
+  --accent-rgb: 124, 92, 255;
+  --on-accent: #ffffff;
+  --ok: #19b58f;
+  --ok-rgb: 25, 181, 143;
+  --pop: #3dd6b5;
+  --danger: #ff5c7a;
+  --font-body: 'Fredoka', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Fredoka', -apple-system, sans-serif;
+  --display-weight: 700;
+  --display-transform: none;
+  --display-spacing: -0.01em;
+  --radius: 24px;
+  --radius-lg: 30px;
+  --card-shadow: 0 6px 22px rgba(110, 72, 170, 0.09);
+  --shadow: 0 18px 44px rgba(110, 72, 170, 0.25);
+  --topbar-bg: rgba(250, 246, 255, 0.9);
+}
+
+.bg-deco {
+  background-color: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='%237c5cff' fill-opacity='0.07'%3E%3Cg transform='translate(22 26) rotate(-18)'%3E%3Cellipse cx='8' cy='10' rx='6' ry='8'/%3E%3Cellipse cx='22' cy='3' rx='6' ry='8'/%3E%3Cellipse cx='36' cy='10' rx='6' ry='8'/%3E%3Cellipse cx='44' cy='24' rx='5' ry='7'/%3E%3Cpath d='M8 36c0-9 9-15 17-15s16 6 16 14c0 6-4 9-9 9-4 0-5-2-8-2s-5 2-9 2c-4 0-7-3-7-8z'/%3E%3C/g%3E%3Cg transform='translate(96 94) rotate(20)'%3E%3Cellipse cx='8' cy='10' rx='6' ry='8'/%3E%3Cellipse cx='22' cy='3' rx='6' ry='8'/%3E%3Cellipse cx='36' cy='10' rx='6' ry='8'/%3E%3Cellipse cx='44' cy='24' rx='5' ry='7'/%3E%3Cpath d='M8 36c0-9 9-15 17-15s16 6 16 14c0 6-4 9-9 9-4 0-5-2-8-2s-5 2-9 2c-4 0-7-3-7-8z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.hero { background: radial-gradient(ellipse 80% 70% at 50% 0%, #e7dcff 0%, transparent 70%); }
+.hero-eyebrow { color: var(--ok); }
+.hero-titulo { color: var(--accent-2); font-size: clamp(2.4rem, 11vw, 3.4rem); }
+@media (prefers-reduced-motion: no-preference) {
+  .hero-titulo { animation: patinhasBalanca 3s ease-in-out infinite; transform-origin: 50% 100%; }
+}
+@keyframes patinhasBalanca { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
+.hero-logo { border-color: #fff; box-shadow: 0 10px 30px rgba(124, 92, 255, 0.3), 0 0 0 4px var(--pop); }
+.hero.com-capa .hero-capa::after { background: linear-gradient(180deg, rgba(250, 246, 255, 0.05), rgba(250, 246, 255, 0.7) 60%, var(--bg)); }
+.chip-info { background: #fff; border-color: transparent; box-shadow: 0 4px 14px rgba(110, 72, 170, 0.1); color: var(--ink); }
+
+.nav-pill { background: #fff; border: 2px solid var(--surface-2); color: var(--accent); }
+.nav-pill.ativo, .nav-pill:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.cardapio-categoria-titulo { font-size: 1.5rem; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.cardapio-categoria-titulo::before {
+  content: ''; width: 22px; height: 22px; flex-shrink: 0;
+  background: var(--accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 48'%3E%3Cellipse cx='8' cy='14' rx='6' ry='8'/%3E%3Cellipse cx='20' cy='6' rx='6' ry='8'/%3E%3Cellipse cx='32' cy='6' rx='6' ry='8'/%3E%3Cellipse cx='43' cy='15' rx='6' ry='8'/%3E%3Cpath d='M9 38c0-10 9-17 16-17s16 7 16 16c0 6-4 10-9 10-4 0-5-2-7-2s-4 2-8 2c-5 0-8-4-8-9z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 48'%3E%3Cellipse cx='8' cy='14' rx='6' ry='8'/%3E%3Cellipse cx='20' cy='6' rx='6' ry='8'/%3E%3Cellipse cx='32' cy='6' rx='6' ry='8'/%3E%3Cellipse cx='43' cy='15' rx='6' ry='8'/%3E%3Cpath d='M9 38c0-10 9-17 16-17s16 7 16 16c0 6-4 10-9 10-4 0-5-2-7-2s-4 2-8 2c-5 0-8-4-8-9z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.item-card { border: 2px solid transparent; }
+.item-card:hover { border-color: var(--surface-2); transform: translateY(-3px) rotate(-0.4deg); }
+.item-foto, .item-mono { border-radius: 20px; }
+.item-mono { background: linear-gradient(135deg, #e7dcff, #c9f7ec); color: var(--accent-2); }
+.item-add { background: var(--pop); color: #0b3a30; box-shadow: 0 6px 16px rgba(61, 214, 181, 0.4); }
+.item-card.no-carrinho .item-add { background: var(--accent); color: #fff; }
+.item-add.pulso { animation: patinhasPulo 0.45s var(--ease-bounce); }
+@keyframes patinhasPulo { 0% { transform: scale(1); } 30% { transform: scale(0.75) rotate(-12deg); } 70% { transform: scale(1.15) rotate(8deg); } 100% { transform: none; } }
+
+.especial-card { background: linear-gradient(120deg, #efe7ff, #e3fbf5); border: 2px dashed rgba(124, 92, 255, 0.35); }
+.especial-icone { border-radius: 50%; }
+.cart-resumo { border-radius: 999px; }
+.cart-qtd { border-radius: 50%; background: rgba(255, 255, 255, 0.25); }
+.sheet-painel { background: #fff; border-radius: 30px 30px 0 0; }
+.sheet-rodape { background: #fff; }
+.btn, .seg, .seg button { border-radius: 999px; }
+.toast { background: var(--accent-2); color: #fff; }
