@@ -1,72 +1,50 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-tpl="forno">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Criar meu Delivery · VB Delivery</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Criar meu delivery · VB Delivery</title>
+<meta name="description" content="Monte seu cardápio digital com pedido direto no WhatsApp em 2 minutos.">
+<meta name="theme-color" content="#150a06">
+<link rel="icon" href="/assets/img/icone.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/base.css?v=3">
 <link rel="stylesheet" href="/assets/tpl/forno.css?v=3">
+<link rel="stylesheet" href="/assets/css/painel.css?v=3">
+<style>
+  .cw { max-width: 560px; margin: 0 auto; padding: 1.4rem 5vw 7rem; }
+  .cw-progresso { display: flex; gap: 6px; margin-bottom: 1.6rem; }
+  .cw-progresso span { flex: 1; height: 5px; border-radius: 3px; background: var(--line); transition: background 0.3s ease; }
+  .cw-progresso span.feito { background: var(--accent); }
+  .cw-passo { animation: vbEntra 0.4s var(--ease-out) both; }
+  .cw h1 { font-family: var(--font-display); font-weight: var(--display-weight); text-transform: var(--display-transform); letter-spacing: var(--display-spacing); font-size: clamp(1.9rem, 8vw, 2.5rem); line-height: 1.05; }
+  .cw .hero-sub { text-align: left; margin: 0.6rem 0 1.4rem; }
+  .segs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+  .seg-op { padding: 0.8rem 0.4rem; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; font-size: 0.8rem; color: var(--ink-soft); transition: all 0.15s ease; }
+  .seg-op.ativo { background: var(--accent); color: var(--on-accent); border-color: transparent; transform: scale(1.02); }
+  .url-previa { padding: 0.8rem 1rem; border-radius: 12px; background: var(--surface); border: 1px dashed rgba(var(--accent-rgb), 0.5); font-size: 0.88rem; word-break: break-all; margin-bottom: 1rem; }
+  .url-previa b { color: var(--accent); }
+  .cw-rodape { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; padding: 0.8rem 5vw calc(0.8rem + env(safe-area-inset-bottom)); background: var(--bg-2); border-top: 1px solid var(--line); display: flex; gap: 0.6rem; justify-content: center; }
+  .cw-rodape > * { max-width: 540px; }
+  .tpl-card .tpl-sugerido { position: absolute; top: 8px; left: 8px; z-index: 2; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.25rem 0.5rem; border-radius: 6px; background: var(--ok); color: #0b2410; }
+  body { padding-bottom: 0; }
+</style>
 </head>
 <body>
-<header id="topbar">
-  <div class="tb-brand">VB Delivery</div>
-</header>
-
-<main class="container" style="padding-top:2.4rem;max-width:420px;">
-  <h1 class="hero-titulo" style="font-size:1.8rem;text-align:left;margin-bottom:.3rem;">Criar meu Delivery</h1>
-  <p class="hero-sub" style="text-align:left;margin:0 0 1.6rem;">Cardápio digital + pedido pelo WhatsApp, no ar em poucos minutos.</p>
-
-  <section id="blocoAuth">
-    <div class="vb-field">
-      <label for="authEmail">E-mail</label>
-      <input type="email" id="authEmail" autocomplete="email">
-    </div>
-    <div class="vb-field">
-      <label for="authSenha">Senha</label>
-      <input type="password" id="authSenha" autocomplete="current-password">
-    </div>
-    <p id="authMsg" style="font-size:.82rem;color:var(--ink-soft);min-height:1.2em;"></p>
-    <button type="button" class="vb-btn" id="entrarBtn">Entrar</button>
-    <button type="button" class="vb-btn secundario" id="criarContaBtn" style="margin-top:.6rem;">Criar conta nova</button>
-  </section>
-
-  <section id="blocoWizard" class="oculto">
-    <div class="vb-field">
-      <label for="wNome">Nome do estabelecimento</label>
-      <input type="text" id="wNome" placeholder="Ex: Pizza em Dobro">
-    </div>
-    <div class="vb-field">
-      <label for="wSlug">Endereço do site</label>
-      <input type="text" id="wSlug" placeholder="pizza-em-dobro">
-    </div>
-    <div class="vb-field">
-      <label for="wCidade">Cidade</label>
-      <input type="text" id="wCidade" placeholder="Itapetininga">
-    </div>
-    <div class="vb-field">
-      <label for="wSegmento">Segmento</label>
-      <select id="wSegmento">
-        <option value="pizzaria">Pizzaria</option>
-        <option value="petshop">Petshop</option>
-        <option value="mercado">Mercado / conveniência</option>
-        <option value="lanchonete">Lanchonete</option>
-        <option value="acaiteria">Açaiteria</option>
-        <option value="hamburgueria">Hamburgueria</option>
-        <option value="outro">Outro</option>
-      </select>
-    </div>
-    <div class="vb-field">
-      <label for="wWhats">WhatsApp (com DDD)</label>
-      <input type="tel" id="wWhats" placeholder="15999999999">
-    </div>
-    <p id="wizardMsg" style="font-size:.82rem;color:var(--ink-soft);min-height:1.2em;"></p>
-    <button type="button" class="vb-btn" id="criarEstabBtn">Criar meu cardápio</button>
-  </section>
+<div class="bg-deco" aria-hidden="true"></div>
+<main class="cw">
+  <div class="cw-progresso" id="progresso"><span></span><span></span><span></span><span></span></div>
+  <div id="passo"></div>
 </main>
+<div class="cw-rodape" id="rodape"></div>
+<div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/supabase-client.js?v=1"></script>
-<script src="assets/js/criar.js?v=1"></script>
+<script src="/assets/js/supabase-client.js?v=1"></script>
+<script src="/assets/js/util.js?v=3"></script>
+<script src="/assets/js/templates.js?v=3"></script>
+<script src="/assets/js/demo.js?v=3"></script>
+<script src="/assets/js/criar.js?v=3"></script>
 </body>
 </html>
