@@ -293,3 +293,8 @@ body.painel { padding-bottom: calc(84px + env(safe-area-inset-bottom)); backgrou
   .tpl-grade { grid-template-columns: repeat(4, 1fr); }
   .kpis { grid-template-columns: repeat(4, 1fr); }
 }
+
+/* chamado com localização (atendimento no local) */
+.pa-mapa { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.55rem; }
+.pa-mapa .btn { box-shadow: none; }
+.pa-mapa small { font-size: 0.74rem; color: var(--ink-faint); }

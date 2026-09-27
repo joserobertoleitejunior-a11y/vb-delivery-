@@ -55,6 +55,13 @@
       fontes: 'family=Bungee&family=Space+Grotesk:wght@400;500;600;700',
       cor: '#ff2e88', fundo: '#07060d', tinta: '#f5f1ff',
       ideal: ['hamburgueria', 'lanchonete', 'adega']
+    },
+    {
+      chave: 'asfalto', nome: 'Asfalto', escuro: true,
+      descricao: 'Asfalto e amarelo de sinalização, faixa zebrada.',
+      fontes: 'family=Bebas+Neue&family=Barlow:wght@400;500;600;700',
+      cor: '#ffc400', fundo: '#15171a', tinta: '#f4f4f1',
+      ideal: ['borracharia']
     }
   ];
 

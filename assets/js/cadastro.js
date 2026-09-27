@@ -31,6 +31,8 @@
   var timerPoll = null;
   var diasResumo = 30;
   var tituloOriginal = document.title;
+  var V = U.vocab('pizzaria');
+  var SERVICO = false;
 
   /* ===================== utilidades ===================== */
   function mostrarTela(id) {
@@ -178,8 +180,28 @@
     if (q.get('nova') === '1') abrirBoasVindas();
   }
 
+  function aplicarVocabulario() {
+    V = U.vocab(loja.segmento);
+    SERVICO = U.modoDoSegmento(loja.segmento) === 'servico';
+    var abaPed = document.querySelector('[data-aba="pedidos"]');
+    abaPed.childNodes.forEach(function (n) { if (n.nodeType === 3 && n.textContent.trim()) n.textContent = V.pedidos; });
+    var abaCar = document.querySelector('[data-aba="cardapio"]');
+    abaCar.childNodes.forEach(function (n) { if (n.nodeType === 3 && n.textContent.trim()) n.textContent = V.itens; });
+    var t = function (id, txt) { var el = $(id); if (el) el.textContent = txt; };
+    t('rotuloEntrega', SERVICO ? 'Atendo no local do cliente (socorro)' : 'Faço entrega');
+    t('rotuloRetirada', SERVICO ? 'Cliente pode vir até a loja' : 'Cliente pode retirar na loja');
+    t('rotuloTaxa', SERVICO ? 'Taxa de deslocamento (R$)' : 'Taxa de entrega (R$)');
+    t('rotuloTempoMin', SERVICO ? 'Chega em (mín.)' : 'Tempo mín. (min)');
+    t('rotuloTempoMax', SERVICO ? 'Chega em (máx.)' : 'Tempo máx. (min)');
+    t('tituloEntrega', SERVICO ? 'Atendimento' : 'Entrega e retirada');
+    t('tituloItens', V.itens === 'Cardápio' ? 'Itens' : 'Serviços');
+    t('novoItemBtn', SERVICO ? '+ Novo serviço' : '+ Novo item');
+    document.querySelectorAll('[data-so-cardapio]').forEach(function (el) { el.classList.toggle('oculto', SERVICO); });
+  }
+
   async function abrirLoja() {
     try { localStorage.setItem(LOJA_KEY, loja.id); } catch (e) {}
+    aplicarVocabulario();
     rascunho = {};
     atualizarBarraSalvar();
     renderizarTopo();
@@ -225,6 +247,11 @@
   /* ===================== pedidos (caixa) ===================== */
   var ORDEM_STATUS = { novo: 0, preparando: 1, saiu_entrega: 2, concluido: 3, cancelado: 4 };
   var ROTULO_STATUS = { novo: 'Novo', preparando: 'Preparando', saiu_entrega: 'Saiu', concluido: 'Concluído', cancelado: 'Cancelado' };
+  function rotuloStatusAdmin(p) {
+    if (SERVICO && p.status === 'preparando') return 'Confirmado';
+    if (p.status === 'saiu_entrega') return p.forma_entrega === 'retirada' ? (SERVICO ? 'Pode vir' : 'Pronto') : (SERVICO ? 'A caminho' : 'Saiu');
+    return ROTULO_STATUS[p.status];
+  }
 
   function iniciarPolling() {
     clearInterval(timerPoll);
@@ -251,7 +278,7 @@
     $('badgeNovos').textContent = nNovos || '';
     $('nNovos').textContent = nNovos ? ' ' + nNovos : '';
     $('nAtivos').textContent = nAtivos ? ' ' + nAtivos : '';
-    document.title = nNovos ? '(' + nNovos + ') Novo pedido · VB Delivery' : tituloOriginal;
+    document.title = nNovos ? '(' + nNovos + ') Novo ' + V.pedido.toLowerCase() + ' · VB Delivery' : tituloOriginal;
   }
 
   function bip() {
@@ -274,7 +301,7 @@
   function alertarNovos(novos) {
     bip();
     if (navigator.vibrate) navigator.vibrate([220, 120, 220]);
-    U.toast(novos.length > 1 ? novos.length + ' pedidos novos!' : 'Novo pedido #' + novos[0].numero + '!', 3500);
+    U.toast(novos.length > 1 ? novos.length + ' ' + V.pedidos.toLowerCase() + ' novos!' : 'Novo ' + V.pedido.toLowerCase() + ' #' + novos[0].numero + '!', 3500);
     var est = IMP.estado();
     if (est.autoImprimir && est.conectada) {
       novos.slice().reverse().forEach(function (p) {
@@ -297,7 +324,7 @@
 
   function proximoPasso(p) {
     if (p.status === 'novo') return { status: 'preparando', rotulo: 'Aceitar' };
-    if (p.status === 'preparando') return { status: 'saiu_entrega', rotulo: p.forma_entrega === 'retirada' ? 'Pronto p/ retirar' : 'Saiu p/ entrega' };
+    if (p.status === 'preparando') return { status: 'saiu_entrega', rotulo: p.forma_entrega === 'retirada' ? (SERVICO ? 'Pode vir' : 'Pronto p/ retirar') : (SERVICO ? 'Estou a caminho' : 'Saiu p/ entrega') };
     if (p.status === 'saiu_entrega') return { status: 'concluido', rotulo: 'Concluir' };
     return null;
   }
@@ -306,7 +333,7 @@
     var lista = filtrarPedidos();
     if (!lista.length) {
       var vazio = filtro === 'ativos'
-        ? 'Nenhum pedido em andamento.<br>Quando chegar um, ele aparece aqui na hora' + (somLigado ? ' com som.' : ' — ative o som pra ser avisado.')
+        ? 'Nenhum ' + V.pedido.toLowerCase() + ' em andamento.<br>Quando chegar um, ele aparece aqui na hora' + (somLigado ? ' com som.' : ' — ative o som pra ser avisado.')
         : 'Nada por aqui.';
       $('listaPedidos').innerHTML = '<div class="pa-vazio">' + U.ICONES.pedidos + vazio + '</div>';
       return;
@@ -314,16 +341,22 @@
     $('listaPedidos').innerHTML = lista.map(function (p) {
       var passo = proximoPasso(p);
       var entrega = p.forma_entrega === 'entrega';
-      var tags = [entrega ? 'Entrega' : 'Retirada'];
+      var tags = [entrega ? (SERVICO ? 'No local do cliente' : 'Entrega') : (SERVICO ? 'Vem até a loja' : 'Retirada')];
+      var det = p.detalhes || {};
+      if (det.veiculo || det.modelo) tags.push([det.veiculo, det.modelo].filter(Boolean).join(' · '));
       if (p.forma_pagamento) tags.push((U.PAGAMENTOS[p.forma_pagamento] || p.forma_pagamento) + (p.troco_para ? ' · troco p/ ' + U.preco(p.troco_para) : ''));
       return '<article class="pa-card status-' + p.status + ((recemIds || []).indexOf(p.id) !== -1 ? ' recem' : '') + '" data-pedido="' + p.id + '">' +
         '<div class="pa-topo"><div><strong>#' + (p.numero || '—') + '</strong><span class="pa-tempo">' + tempoAtras(p.criado_em) + '</span></div>' +
-        '<span class="pa-status">' + (p.status === 'saiu_entrega' && !entrega ? 'Pronto' : ROTULO_STATUS[p.status]) + '</span></div>' +
+        '<span class="pa-status">' + rotuloStatusAdmin(p) + '</span></div>' +
         '<div class="pa-cliente"><strong>' + esc(p.cliente_nome) + '</strong> · ' + esc(U.formatarTelefone(p.cliente_telefone)) + '</div>' +
         '<div class="pa-tags">' + tags.map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') + '</div>' +
-        (entrega && p.endereco_entrega ? '<div class="pa-end">' + esc(p.endereco_entrega) + (p.referencia ? ' — ' + esc(p.referencia) : '') + '</div>' : '') +
+        (entrega && (p.endereco_entrega || p.referencia) ? '<div class="pa-end">' + esc(p.endereco_entrega || '') + (p.referencia ? (p.endereco_entrega ? ' — ' : '') + esc(p.referencia) : '') + '</div>' : '') +
+        (entrega && p.localizacao_lat != null ? '<div class="pa-mapa">' +
+          '<a class="btn mini sec" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' + p.localizacao_lat + ',' + p.localizacao_lng + '">' + U.ICONES.local.replace('<svg', '<svg width="16" height="16"') + 'Ver no mapa</a>' +
+          '<a class="btn mini" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=' + p.localizacao_lat + ',' + p.localizacao_lng + '">' + U.ICONES.rota.replace('<svg', '<svg width="16" height="16"') + 'Rota</a>' +
+          (det.precisao_m ? '<small>GPS ±' + det.precisao_m + ' m</small>' : '') + '</div>' : '') +
         '<ul class="pa-itens">' + (p.itens || []).map(function (l) {
-          return '<li><b>' + l.qtd + 'x</b><span>' + esc(l.descricao) + '</span><em>' + U.preco(l.total != null ? l.total : l.preco * l.qtd) + '</em>' +
+          return '<li><b>' + l.qtd + 'x</b><span>' + esc(l.descricao) + '</span><em>' + U.precoOuCombinar(l.total != null ? l.total : l.preco * l.qtd) + '</em>' +
             (l.obs ? '<small>“' + esc(l.obs) + '”</small>' : '') + '</li>';
         }).join('') + '</ul>' +
         (p.observacao ? '<div class="pa-obs"><strong>Obs.:</strong> ' + esc(p.observacao) + '</div>' : '') +
@@ -342,11 +375,13 @@
     var primeiro = (p.cliente_nome || '').split(' ')[0];
     var textos = {
       novo: 'Olá ' + primeiro + '! Recebemos seu pedido #' + p.numero + ' na ' + loja.nome + '. Já já começamos a preparar!',
-      preparando: 'Olá ' + primeiro + '! Seu pedido #' + p.numero + ' da ' + loja.nome + ' já está sendo preparado.',
-      saiu_entrega: p.forma_entrega === 'retirada'
-        ? 'Olá ' + primeiro + '! Seu pedido #' + p.numero + ' da ' + loja.nome + ' está pronto pra retirar.'
-        : 'Olá ' + primeiro + '! Seu pedido #' + p.numero + ' da ' + loja.nome + ' saiu pra entrega e já está a caminho.',
-      concluido: 'Olá ' + primeiro + '! Obrigado pelo pedido #' + p.numero + '. Volte sempre!',
+      preparando: SERVICO ? 'Olá ' + primeiro + '! Aqui é da ' + loja.nome + ', recebemos seu chamado #' + p.numero + ' e já vamos sair.' : 'Olá ' + primeiro + '! Seu pedido #' + p.numero + ' da ' + loja.nome + ' já está sendo preparado.',
+      saiu_entrega: SERVICO
+        ? (p.forma_entrega === 'retirada' ? 'Olá ' + primeiro + '! Pode vir até a ' + loja.nome + ' que já estamos te esperando.' : 'Olá ' + primeiro + '! Aqui é da ' + loja.nome + ', estou a caminho do seu local. Qualquer coisa me chama aqui.')
+        : p.forma_entrega === 'retirada'
+          ? 'Olá ' + primeiro + '! Seu pedido #' + p.numero + ' da ' + loja.nome + ' está pronto pra retirar.'
+          : 'Olá ' + primeiro + '! Seu pedido #' + p.numero + ' da ' + loja.nome + ' saiu pra entrega e já está a caminho.',
+      concluido: 'Olá ' + primeiro + '! Obrigado ' + (SERVICO ? 'pela confiança' : 'pelo pedido #' + p.numero) + '. Volte sempre!',
       cancelado: 'Olá ' + primeiro + ', sobre seu pedido #' + p.numero + ' na ' + loja.nome + ':'
     };
     return 'https://wa.me/' + d + '?text=' + encodeURIComponent(textos[p.status] || '');
@@ -555,7 +590,7 @@
         if (i.permite_meio_a_meio) flags.push('meio a meio');
         if (i.aceita_borda) flags.push('borda');
         return '<div class="ca-item' + (i.ativo ? '' : ' inativo') + '" data-editar-item="' + i.id + '">' + thumb(i) +
-          '<div class="ca-info"><strong>' + esc(i.nome) + '</strong><small>' + U.preco(i.preco) + (flags.length ? ' · ' + flags.join(' · ') : '') + (i.ativo ? '' : ' · esgotado') + '</small></div>' +
+          '<div class="ca-info"><strong>' + esc(i.nome) + '</strong><small>' + U.precoOuCombinar(i.preco) + (flags.length ? ' · ' + flags.join(' · ') : '') + (i.ativo ? '' : (SERVICO ? ' · indisponível' : ' · esgotado')) + '</small></div>' +
           '<label class="switch" data-parar title="' + (i.ativo ? 'Disponível' : 'Esgotado') + '"><input type="checkbox" data-alternar="' + i.id + '" ' + (i.ativo ? 'checked' : '') + ' aria-label="Disponível"><span class="trilho"></span></label></div>';
       }).join('');
     }).join('') : '<p class="ca-vazio">Nenhum item ainda. Toque em "+ Novo item" pra começar — dá pra pôr foto, descrição e preço.</p>';
@@ -674,15 +709,15 @@
       '<button type="button" class="link-acao' + (f.foto_url ? '' : ' oculto') + '" id="fiTirarFoto">Tirar foto</button>' +
       '<div class="campo" style="margin-top:.8rem"><label for="fiNome">Nome</label><input id="fiNome" maxlength="80" value="' + esc(f.nome) + '" placeholder="Ex.: Calabresa"></div>' +
       '<div class="campo"><label for="fiDesc">Descrição</label><textarea id="fiDesc" maxlength="300" rows="2" placeholder="Ingredientes, tamanho, o que vem…">' + esc(f.descricao || '') + '</textarea></div>' +
-      '<div class="linha-campos"><div class="campo"><label for="fiPreco">Preço (R$)</label><input id="fiPreco" type="number" inputmode="decimal" min="0" step="0.01" value="' + esc(f.preco) + '"></div>' +
+      '<div class="linha-campos"><div class="campo"><label for="fiPreco">Preço (R$)</label><input id="fiPreco" type="number" inputmode="decimal" min="0" step="0.01" value="' + esc(f.preco) + '"><div class="ajuda">0 = "a combinar"</div></div>' +
       '<div class="campo"><label for="fiCat">Categoria</label><select id="fiCat">' + opcoesCat + '</select></div></div>' +
       '<div class="switches">' +
-        '<label class="switch"><input type="checkbox" id="fiMeio" ' + (f.permite_meio_a_meio ? 'checked' : '') + '><span class="trilho"></span>Pode ser meio a meio</label>' +
-        '<label class="switch"><input type="checkbox" id="fiBorda" ' + (f.aceita_borda ? 'checked' : '') + '><span class="trilho"></span>Aceita borda recheada</label>' +
+        '<label class="switch' + (SERVICO ? ' oculto' : '') + '"><input type="checkbox" id="fiMeio" ' + (f.permite_meio_a_meio ? 'checked' : '') + '><span class="trilho"></span>Pode ser meio a meio</label>' +
+        '<label class="switch' + (SERVICO ? ' oculto' : '') + '"><input type="checkbox" id="fiBorda" ' + (f.aceita_borda ? 'checked' : '') + '><span class="trilho"></span>Aceita borda recheada</label>' +
         '<label class="switch"><input type="checkbox" id="fiAtivo" ' + (f.ativo ? 'checked' : '') + '><span class="trilho"></span>Disponível no cardápio</label>' +
       '</div><p class="p-msg" id="fiMsg"></p>';
     var rodape = (f.id ? '<button type="button" class="btn perigo" id="fiExcluir">Excluir</button>' : '') + '<button type="button" class="btn cheio" id="fiSalvar">Salvar item</button>';
-    abrirSheet(f.id ? 'Editar item' : 'Novo item', corpo, rodape);
+    abrirSheet(f.id ? (SERVICO ? 'Editar serviço' : 'Editar item') : (SERVICO ? 'Novo serviço' : 'Novo item'), corpo, rodape);
 
     $('fiArquivo').addEventListener('change', async function () {
       var arq = this.files[0];

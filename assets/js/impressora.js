@@ -106,9 +106,13 @@
       cabeca: [loja.nome],
       titulo: 'PEDIDO #' + p.numero,
       sub: [quando + '  ' + (entrega ? 'ENTREGA' : 'RETIRADA')],
-      cliente: [p.cliente_nome, formatarTel(p.cliente_telefone)].concat(entrega ? quebrar('End: ' + (p.endereco_entrega || ''), L) : []).concat(p.referencia ? quebrar('Ref: ' + p.referencia, L) : []),
+      cliente: [p.cliente_nome, formatarTel(p.cliente_telefone)]
+        .concat(entrega && p.endereco_entrega ? quebrar('End: ' + p.endereco_entrega, L) : [])
+        .concat(p.referencia ? quebrar('Ref: ' + p.referencia, L) : [])
+        .concat(entrega && p.localizacao_lat != null ? quebrar('GPS: ' + p.localizacao_lat + ', ' + p.localizacao_lng, L) : [])
+        .concat(p.detalhes && (p.detalhes.veiculo || p.detalhes.modelo) ? quebrar('Veiculo: ' + [p.detalhes.veiculo, p.detalhes.modelo].filter(Boolean).join(' - '), L) : []),
       itens: (p.itens || []).map(function (l) {
-        return { linhas: colunas(l.qtd + 'x ' + l.descricao, reais(l.total), L), obs: l.obs ? quebrar('  > ' + l.obs, L) : [] };
+        return { linhas: colunas(l.qtd + 'x ' + l.descricao, Number(l.total) > 0 ? reais(l.total) : 'a combinar', L), obs: l.obs ? quebrar('  > ' + l.obs, L) : [] };
       }),
       totais: [].concat(colunas('Subtotal', reais(p.subtotal != null ? p.subtotal : p.total), L))
         .concat(entrega ? colunas('Entrega', reais(p.taxa_entrega), L) : []),

@@ -35,6 +35,7 @@ Estrutura única (`assets/css/base.css`) e cada template só troca tokens, fonte
 - **Feira** — claro, verde folha e limão, preço em etiqueta
 - **Patinhas** — petshop, lilás e menta, patinhas no fundo
 - **Neon** — letreiro neon piscando e grade retrô
+- **Asfalto** — borracharia: asfalto, amarelo de sinalização, faixa zebrada
 
 A cor de destaque escolhida pelo dono calcula sozinha o contraste do texto. Prévia ao vivo de qualquer template: `/perfil.html?demo=<segmento>&tpl=<chave>`.
 
@@ -45,6 +46,16 @@ A cor de destaque escolhida pelo dono calcula sozinha o contraste do texto. Pré
 - Loja fechada (manual ou pelo horário de Brasília, inclusive faixa que passa da meia-noite) não recebe pedido.
 - Número curto por loja (#1, #2…), limite anti-spam por telefone.
 - Depois de enviar: tela de sucesso com a mensagem pronta pro WhatsApp e "Meus pedidos" com andamento ao vivo.
+
+## Atendimento no local (borracharia)
+
+Segmentos em `SEGMENTOS_SERVICO` (hoje: `borracharia`) usam o mesmo motor com outro vocabulário e fluxo de socorro:
+
+- site: "Serviços", botão pulsando **"Pneu furou? Chamar agora"** (escolhe o problema → vai direto pro chamado), **"Venha até mim"** com localização GPS (endereço vira opcional), tipo de veículo + modelo/cor, preço 0 = **"a combinar"** (pneu novo, orçamento no local), "24 horas" quando o horário cobre o dia todo
+- painel: aba **Chamados**, card com veículo, **Ver no mapa** e **Rota** (abre o GPS do celular), "Aceitar → Estou a caminho → Concluir", WhatsApp "estou a caminho", sem bordas/combos
+- banco: `delivery_pedidos.localizacao_lat/lng` + `detalhes` (só `veiculo`, `modelo`, `precisao_m` — o resto é descartado)
+
+Pra outro nicho de serviço no local (chaveiro, guincho, eletricista), é só incluir o segmento na constraint e em `SEGMENTOS_SERVICO`.
 
 ## Painel
 

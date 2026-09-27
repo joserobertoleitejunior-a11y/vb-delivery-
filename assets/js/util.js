@@ -50,8 +50,36 @@
   var SEGMENTOS = {
     pizzaria: 'Pizzaria', hamburgueria: 'Hamburgueria', lanchonete: 'Lanchonete', restaurante: 'Restaurante',
     japonesa: 'Comida japonesa', marmitaria: 'Marmitaria', acaiteria: 'Açaiteria', sorveteria: 'Sorveteria',
-    doceria: 'Doceria', padaria: 'Padaria', mercado: 'Mercado', adega: 'Adega / bebidas', petshop: 'Petshop', outro: 'Delivery'
+    doceria: 'Doceria', padaria: 'Padaria', mercado: 'Mercado', adega: 'Adega / bebidas', petshop: 'Petshop',
+    borracharia: 'Borracharia', outro: 'Delivery'
   };
+
+  // Segmentos em que o serviço acontece no local do cliente (socorro,
+  // chamado) — mudam as palavras do site e do painel, o motor é o mesmo.
+  var SEGMENTOS_SERVICO = ['borracharia'];
+  function modoDoSegmento(seg) { return SEGMENTOS_SERVICO.indexOf(seg) !== -1 ? 'servico' : 'cardapio'; }
+
+  var VOCAB = {
+    cardapio: {
+      itens: 'Cardápio', buscar: 'Buscar no cardápio', verPedido: 'Ver pedido', seuPedido: 'Seu pedido', maisItens: '+ Adicionar mais itens',
+      adicionado: 'Adicionado ao pedido', entrega: 'Entrega', retirada: 'Retirar na loja', retiradaCurta: 'Retirada', soRetirada: 'Só retirada',
+      comoReceber: 'Como você quer receber?', enderecoRotulo: 'Endereço de entrega', enviar: 'Enviar pedido', taxa: 'Entrega',
+      pedido: 'Pedido', pedidos: 'Pedidos', meusPedidos: 'Meus pedidos', tempo: 'min', vazio: 'O cardápio ainda está sendo montado. Volta daqui a pouquinho!',
+      retiradaEm: 'Retirada em', entregarEm: 'Entregar em', voceRetira: 'Vou retirar na loja', subHero: 'Escolha, monte do seu jeito e mande o pedido direto pro WhatsApp da loja.',
+      enviado: 'Pedido enviado!', recebido: 'A loja já recebeu seu pedido.', continuar: 'Continuar', finalizar: 'Finalizar pedido',
+      st: { novo: 'Recebido pela loja', preparando: 'Em preparo', saiu_entrega: 'Saiu pra entrega', saiu_retirada: 'Pronto pra retirar', concluido: 'Entregue', concluido_retirada: 'Retirado' }
+    },
+    servico: {
+      itens: 'Serviços', buscar: 'Buscar serviço', verPedido: 'Ver chamado', seuPedido: 'Seu chamado', maisItens: '+ Adicionar outro serviço',
+      adicionado: 'Serviço adicionado', entrega: 'Venha até mim', retirada: 'Vou até vocês', retiradaCurta: 'Na loja', soRetirada: 'Atende só no local',
+      comoReceber: 'Onde vai ser o atendimento?', enderecoRotulo: 'Onde você está?', enviar: 'Chamar agora', taxa: 'Deslocamento',
+      pedido: 'Chamado', pedidos: 'Chamados', meusPedidos: 'Meus chamados', tempo: 'min pra chegar', vazio: 'A lista de serviços ainda está sendo montada.',
+      retiradaEm: 'Endereço', entregarEm: 'Atender em', voceRetira: 'Vou até vocês', subHero: 'Escolha o serviço, mande sua localização e a gente vai até você.',
+      enviado: 'Chamado enviado!', recebido: 'Já recebemos seu chamado.', continuar: 'Continuar', finalizar: 'Finalizar chamado',
+      st: { novo: 'Recebido', preparando: 'Confirmado', saiu_entrega: 'A caminho', saiu_retirada: 'Pode vir', concluido: 'Concluído', concluido_retirada: 'Concluído' }
+    }
+  };
+  function vocab(seg) { return VOCAB[modoDoSegmento(seg)]; }
 
   var DIAS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
@@ -114,8 +142,20 @@
     return null;
   }
 
+  function aberto24h(horarios) {
+    var h = horarios || {};
+    return [0, 1, 2, 3, 4, 5, 6].every(function (d) {
+      var f = (h[String(d)] || [])[0];
+      return f && f[0] === '00:00' && (f[1] === '24:00' || f[1] === '23:59' || f[1] === '00:00');
+    });
+  }
+
+  // item sem preço (0) = "a combinar" (pneu novo, orçamento no local…)
+  function precoOuCombinar(n) { return Number(n) > 0 ? preco(n) : 'A combinar'; }
+
   function descreverHorarioDia(faixas) {
     if (!faixas || !faixas.length) return 'Fechado';
+    if (faixas.length === 1 && faixas[0][0] === '00:00' && (faixas[0][1] === '24:00' || faixas[0][1] === '23:59' || faixas[0][1] === '00:00')) return '24 horas';
     return faixas.map(function (f) { return f[0] + ' – ' + f[1]; }).join(', ');
   }
 
@@ -139,7 +179,11 @@
     pedidos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/></svg>',
     local: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
     insta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r=".8" fill="currentColor"/></svg>',
-    impressora: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><rect x="7" y="14" width="10" height="7"/></svg>'
+    impressora: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><rect x="7" y="14" width="10" height="7"/></svg>',
+    gps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>',
+    pneu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 3v5M12 16v5M3 12h5M16 12h5M5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/></svg>',
+    alerta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.5 20h19z"/><line x1="12" y1="10" x2="12" y2="14"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>',
+    rota: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 21 3l-8 18-2-8z"/></svg>'
   };
 
   function toast(texto, ms) {
@@ -177,6 +221,7 @@
     escapeHtml: escapeHtml, preco: preco, soDigitos: soDigitos, formatarTelefone: formatarTelefone,
     mascaraTelefone: mascaraTelefone, slugificar: slugificar, cidadeLegivel: cidadeLegivel,
     SEGMENTOS: SEGMENTOS, DIAS: DIAS, PAGAMENTOS: PAGAMENTOS,
+    modoDoSegmento: modoDoSegmento, vocab: vocab, aberto24h: aberto24h, precoOuCombinar: precoOuCombinar,
     lojaAberta: lojaAberta, proximaAbertura: proximaAbertura, descreverHorarioDia: descreverHorarioDia,
     ICONES: ICONES, toast: toast, lerLocal: lerLocal, gravarLocal: gravarLocal, mensagemErro: mensagemErro
   };

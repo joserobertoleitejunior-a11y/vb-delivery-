@@ -26,6 +26,8 @@
   var cardapio = { categorias: [], itens: [], bordas: [], combos: [] };
   var carrinho = [];
   var aberta = true;
+  var V = U.vocab('pizzaria');
+  var SERVICO = false;
   var CART_KEY = null;
   var PEDIDOS_KEY = 'vbdelivery_meus_pedidos';
   var CLIENTE_KEY = 'vbdelivery_cliente';
@@ -67,6 +69,8 @@
       if (!MODO_PREVIEW) window.db.rpc('delivery_registrar_acesso', { p_estabelecimento_id: estab.id });
     }
 
+    V = U.vocab(estab.segmento);
+    SERVICO = U.modoDoSegmento(estab.segmento) === 'servico';
     T.aplicar(q.get('tpl') || estab.template, estab.cor_destaque);
     try { localStorage.setItem('vbdelivery_tpl_' + location.pathname, estab.template); } catch (e) {}
 
@@ -94,7 +98,11 @@
     $('drawerNome').textContent = estab.nome;
     $('heroTitulo').textContent = estab.nome;
     $('heroEyebrow').textContent = (U.SEGMENTOS[estab.segmento] || 'Delivery') + ' · ' + U.cidadeLegivel(estab.cidade);
-    $('heroSub').textContent = estab.descricao || 'Escolha, monte do seu jeito e mande o pedido direto pro WhatsApp da loja.';
+    $('heroSub').textContent = estab.descricao || V.subHero;
+    $('buscaBox').placeholder = V.buscar;
+    document.querySelector('.cart-rotulo').textContent = V.verPedido;
+    document.querySelector('[data-abrir="meusPedidos"] span').textContent = V.meusPedidos;
+    document.querySelector('#drawer .drawer-rotulo').textContent = V.itens;
 
     if (estab.foto_capa_url) {
       $('heroCapa').style.backgroundImage = 'url("' + encodeURI(estab.foto_capa_url) + '")';
@@ -110,15 +118,22 @@
     }
 
     var chips = [];
+    if (SERVICO && U.aberto24h(estab.horarios)) chips.push(U.ICONES.relogio + '24 horas');
     if (estab.aceita_entrega && estab.tempo_entrega_min) {
-      chips.push(U.ICONES.relogio + estab.tempo_entrega_min + (estab.tempo_entrega_max && estab.tempo_entrega_max !== estab.tempo_entrega_min ? '–' + estab.tempo_entrega_max : '') + ' min');
+      chips.push(U.ICONES.relogio + estab.tempo_entrega_min + (estab.tempo_entrega_max && estab.tempo_entrega_max !== estab.tempo_entrega_min ? '–' + estab.tempo_entrega_max : '') + ' ' + V.tempo);
     }
     if (estab.aceita_entrega) {
-      chips.push(U.ICONES.moto + (estab.taxa_entrega == null ? 'Entrega' : Number(estab.taxa_entrega) === 0 ? 'Entrega grátis' : 'Entrega ' + U.preco(estab.taxa_entrega)));
+      var icEnt = SERVICO ? U.ICONES.gps : U.ICONES.moto;
+      chips.push(icEnt + (SERVICO
+        ? (estab.taxa_entrega == null ? 'Vai até você' : Number(estab.taxa_entrega) === 0 ? 'Deslocamento grátis' : 'Deslocamento ' + U.preco(estab.taxa_entrega))
+        : (estab.taxa_entrega == null ? 'Entrega' : Number(estab.taxa_entrega) === 0 ? 'Entrega grátis' : 'Entrega ' + U.preco(estab.taxa_entrega))));
     }
-    if (estab.aceita_retirada) chips.push(U.ICONES.loja + (estab.aceita_entrega ? 'Retirada' : 'Só retirada'));
+    if (estab.aceita_retirada) chips.push(U.ICONES.loja + (estab.aceita_entrega ? (SERVICO ? 'Também na loja' : V.retiradaCurta) : V.soRetirada));
     if (estab.aceita_entrega && estab.pedido_minimo) chips.push(U.ICONES.moeda + 'Mín. ' + U.preco(estab.pedido_minimo));
     $('heroInfo').innerHTML = chips.map(function (c) { return '<span class="chip-info">' + c + '</span>'; }).join('');
+    if (SERVICO && cardapio.itens.length && !document.getElementById('btnSocorro')) {
+      $('heroInfo').insertAdjacentHTML('afterend', '<button type="button" class="hero-socorro" id="btnSocorro">' + U.ICONES.alerta + (estab.segmento === 'borracharia' ? 'Pneu furou? Chamar agora' : 'Chamar agora') + '</button>');
+    }
 
     if (estab.aviso) {
       $('promoBanner').textContent = estab.aviso;
@@ -197,7 +212,7 @@
         fotoOuMono(item, 'item-foto') +
         '<div class="item-corpo">' +
           '<div class="item-topo"><h3 class="item-nome">' + esc(item.nome) + '</h3><span class="item-leader"></span>' +
-            '<span class="item-preco">' + U.preco(item.preco) + '</span></div>' +
+            '<span class="item-preco">' + U.precoOuCombinar(item.preco) + '</span></div>' +
           (item.descricao ? '<p class="item-desc">' + esc(item.descricao) + '</p>' : '') +
           (tags.length ? '<div class="item-tags">' + tags.map(function (t) { return '<span class="item-tag">' + t + '</span>'; }).join('') + '</div>' : '') +
         '</div>' +
@@ -244,7 +259,7 @@
     }).join('');
 
     if (!cardapio.itens.length) {
-      $('cardapioConteudo').innerHTML = '<div class="estado-vazio" style="padding-top:2rem"><p class="hero-sub">O cardápio ainda está sendo montado. Volta daqui a pouquinho!</p></div>';
+      $('cardapioConteudo').innerHTML = '<div class="estado-vazio" style="padding-top:2rem"><p class="hero-sub">' + V.vazio + '</p></div>';
       return;
     }
 
@@ -373,7 +388,7 @@
     var corpo = '';
     corpo += fotoOuMono(it, 'sheet-foto');
     if (it.descricao) corpo += '<p class="sheet-desc">' + esc(it.descricao) + '</p>';
-    corpo += '<p class="sheet-preco-base">' + U.preco(it.preco) + '</p>';
+    corpo += '<p class="sheet-preco-base">' + U.precoOuCombinar(it.preco) + '</p>';
 
     var outras = elegiveisMeio().filter(function (i) { return i.id !== it.id; });
     if (it.permite_meio_a_meio && outras.length) {
@@ -409,7 +424,7 @@
     var rodape = '<div class="qtd" aria-label="Quantidade"><button type="button" data-qtd-item="-1" ' + (s.qtd <= 1 ? 'disabled' : '') + ' aria-label="Menos">−</button>' +
       '<span>' + s.qtd + '</span><button type="button" data-qtd-item="1" aria-label="Mais">+</button></div>' +
       '<button type="button" class="btn cheio" id="itemAddBtn" ' + (falta ? 'disabled' : '') + '>' +
-      (falta ? 'Escolha a outra metade' : 'Adicionar<span class="valor">' + U.preco(total) + '</span>') + '</button>';
+      (falta ? 'Escolha a outra metade' : (SERVICO ? 'Solicitar' : 'Adicionar') + '<span class="valor">' + U.precoOuCombinar(total) + '</span>') + '</button>';
 
     var corpoAtual = primeiraVez ? null : $('sheetConteudo').querySelector('.sheet-corpo');
     var scroll = corpoAtual ? corpoAtual.scrollTop : 0;
@@ -432,7 +447,7 @@
       qtd: s.qtd, obs: (s.obs || '').trim(), descricao: desc, preco: precoItemAtual()
     });
     fecharSheet();
-    U.toast(s.qtd > 1 ? s.qtd + '× adicionado ao pedido' : 'Adicionado ao pedido');
+    U.toast(s.qtd > 1 ? s.qtd + '× — ' + V.adicionado.toLowerCase() : V.adicionado);
   }
 
   /* ===================== sheet do combo ===================== */
@@ -536,23 +551,29 @@
       return '<div class="carrinho-linha">' +
         '<div class="carrinho-info"><strong>' + esc(l.descricao) + '</strong>' +
         (l.obs ? '<div class="obs">“' + esc(l.obs) + '”</div>' : '') +
-        '<div class="valor">' + U.preco(l.preco * l.qtd) + '</div></div>' +
+        '<div class="valor">' + U.precoOuCombinar(l.preco * l.qtd) + '</div></div>' +
         '<div class="qtd mini"><button type="button" data-linha-qtd="' + idx + '" data-d="-1" aria-label="Menos">' + (l.qtd <= 1 ? U.ICONES.lixo : '−') + '</button>' +
         '<span>' + l.qtd + '</span><button type="button" data-linha-qtd="' + idx + '" data-d="1" aria-label="Mais">+</button></div></div>';
     }).join('');
 
     var taxa = estab.aceita_entrega ? Number(estab.taxa_entrega || 0) : 0;
-    corpo += '<button type="button" class="link-acao" data-fechar-sheet>+ Adicionar mais itens</button>';
+    corpo += '<button type="button" class="link-acao" data-fechar-sheet>' + V.maisItens + '</button>';
     corpo += '<div class="totais"><div><span>Subtotal</span><span>' + U.preco(sub) + '</span></div>' +
-      (estab.aceita_entrega ? '<div><span>Entrega</span><span>' + (taxa ? U.preco(taxa) : 'Grátis') + '</span></div>' : '') +
-      '<div class="total"><span>Total' + (estab.aceita_entrega && estab.aceita_retirada ? ' com entrega' : '') + '</span><span>' + U.preco(sub + taxa) + '</span></div></div>';
+      (estab.aceita_entrega ? '<div><span>' + V.taxa + '</span><span>' + (taxa ? U.preco(taxa) : 'Grátis') + '</span></div>' : '') +
+      '<div class="total"><span>Total' + (estab.aceita_entrega && estab.aceita_retirada ? (SERVICO ? ' no seu local' : ' com entrega') : '') + '</span><span>' + U.preco(sub + taxa) + '</span></div></div>' +
+      notaCombinar();
     if (estab.aceita_entrega && estab.pedido_minimo && sub < estab.pedido_minimo) {
       corpo += '<p class="sheet-desc" style="margin-top:.8rem;font-size:.82rem">Faltam <strong>' + U.preco(estab.pedido_minimo - sub) + '</strong> pro pedido mínimo de entrega' +
         (estab.aceita_retirada ? ' (na retirada não tem mínimo)' : '') + '.</p>';
     }
     var rodape = '<button type="button" class="btn cheio" id="irCheckoutBtn" ' + (aberta ? '' : 'disabled') + '>' +
-      (aberta ? 'Continuar<span class="valor">' + U.preco(sub) + '</span>' : 'Loja fechada agora') + '</button>';
-    abrirSheet('carrinho', cabecaSheet('Seu pedido') + '<div class="sheet-corpo">' + corpo + '</div><div class="sheet-rodape">' + rodape + '</div>');
+      (aberta ? V.continuar + '<span class="valor">' + U.preco(sub) + '</span>' : 'Loja fechada agora') + '</button>';
+    abrirSheet('carrinho', cabecaSheet(V.seuPedido) + '<div class="sheet-corpo">' + corpo + '</div><div class="sheet-rodape">' + rodape + '</div>');
+  }
+
+  function temACombinar() { return carrinho.some(function (l) { return !(Number(l.preco) > 0); }); }
+  function notaCombinar() {
+    return temACombinar() ? '<p class="sheet-desc" style="margin-top:.7rem;font-size:.8rem">Itens "a combinar" têm o valor passado ' + (SERVICO ? 'na hora, depois de ver o veículo' : 'pela loja') + '.</p>' : '';
   }
 
   function mudarQtdLinha(idx, d) {
@@ -575,7 +596,8 @@
       nome: salvo.nome || '', telefone: salvo.telefone ? U.formatarTelefone(salvo.telefone) : '',
       forma: estab.aceita_entrega ? 'entrega' : 'retirada',
       endereco: salvo.endereco || '', referencia: salvo.referencia || '',
-      pagamento: (estab.formas_pagamento || [])[0] || null, troco: '', obs: '', erro: null, enviando: false
+      pagamento: (estab.formas_pagamento || [])[0] || null, troco: '', obs: '', erro: null, enviando: false,
+      gps: null, veiculo: salvo.veiculo || null, modelo: salvo.modelo || ''
     };
     if (checkout.forma === 'entrega' && !estab.aceita_entrega) checkout.forma = 'retirada';
     if (checkout.forma === 'retirada' && !estab.aceita_retirada) checkout.forma = 'entrega';
@@ -596,17 +618,26 @@
       campo('ckTel', 'WhatsApp', '<input id="ckTel" type="tel" inputmode="numeric" autocomplete="tel-national" value="' + esc(c.telefone) + '" placeholder="(15) 99999-9999">', 'A loja confirma o pedido por esse número.') +
       '</div>';
 
-    corpo += '<div class="grupo"><div class="grupo-titulo">Como você quer receber?</div>' +
-      '<div class="seg"><button type="button" data-forma="entrega" class="' + (c.forma === 'entrega' ? 'ativo' : '') + '" ' + (estab.aceita_entrega ? '' : 'disabled') + '>Entrega</button>' +
-      '<button type="button" data-forma="retirada" class="' + (c.forma === 'retirada' ? 'ativo' : '') + '" ' + (estab.aceita_retirada ? '' : 'disabled') + '>Retirar na loja</button></div>';
+    corpo += '<div class="grupo"><div class="grupo-titulo">' + V.comoReceber + '</div>' +
+      '<div class="seg"><button type="button" data-forma="entrega" class="' + (c.forma === 'entrega' ? 'ativo' : '') + '" ' + (estab.aceita_entrega ? '' : 'disabled') + '>' + V.entrega + '</button>' +
+      '<button type="button" data-forma="retirada" class="' + (c.forma === 'retirada' ? 'ativo' : '') + '" ' + (estab.aceita_retirada ? '' : 'disabled') + '>' + V.retirada + '</button></div>';
     if (c.forma === 'entrega') {
-      corpo += '<div style="margin-top:.8rem">' +
-        campo('ckEnd', 'Endereço de entrega', '<input id="ckEnd" autocomplete="street-address" maxlength="200" value="' + esc(c.endereco) + '" placeholder="Rua, número, bairro">') +
-        campo('ckRef', 'Complemento / referência', '<input id="ckRef" maxlength="140" value="' + esc(c.referencia) + '" placeholder="Apto, bloco, perto de…">') + '</div>';
+      corpo += '<div style="margin-top:.8rem">';
+      if (SERVICO) corpo += blocoGps();
+      corpo += campo('ckEnd', SERVICO ? (c.gps && c.gps.status === 'ok' ? 'Endereço ou ponto de referência (opcional)' : V.enderecoRotulo) : V.enderecoRotulo,
+          '<input id="ckEnd" autocomplete="street-address" maxlength="200" value="' + esc(c.endereco) + '" placeholder="' + (SERVICO ? 'Rua, número, bairro — ou um ponto de referência' : 'Rua, número, bairro') + '">') +
+        campo('ckRef', SERVICO ? 'Como te achar?' : 'Complemento / referência', '<input id="ckRef" maxlength="140" value="' + esc(c.referencia) + '" placeholder="' + (SERVICO ? 'Ex.: carro prata no posto, em frente ao mercado' : 'Apto, bloco, perto de…') + '">') + '</div>';
     } else if (estab.endereco) {
-      corpo += '<p class="sheet-desc" style="margin-top:.7rem;font-size:.85rem">Retirada em: <strong>' + esc(estab.endereco) + '</strong></p>';
+      corpo += '<p class="sheet-desc" style="margin-top:.7rem;font-size:.85rem">' + V.retiradaEm + ': <strong>' + esc(estab.endereco) + '</strong></p>';
     }
     corpo += '</div>';
+    if (SERVICO) {
+      corpo += '<div class="grupo"><div class="grupo-titulo">Seu veículo</div><div class="chips-escolha">' +
+        ['Carro', 'Moto', 'Caminhonete', 'Caminhão', 'Outro'].map(function (v) {
+          return '<button type="button" data-veiculo="' + v + '" class="' + (c.veiculo === v ? 'ativo' : '') + '">' + v + '</button>';
+        }).join('') + '</div>' +
+        campo('ckModelo', 'Modelo e cor <span style="font-weight:500;color:var(--ink-faint)">(ajuda a te achar)</span>', '<input id="ckModelo" maxlength="60" value="' + esc(c.modelo) + '" placeholder="Ex.: Gol prata, CG 160 vermelha">') + '</div>';
+    }
 
     if (formas.length) {
       corpo += '<div class="grupo"><div class="grupo-titulo">Pagamento <em>Na entrega/retirada</em></div><div class="opcoes">' +
@@ -628,16 +659,16 @@
       '<div class="campo"><textarea id="ckObs" maxlength="280" rows="2" placeholder="Ex.: campainha não funciona, pode ligar">' + esc(c.obs) + '</textarea></div></div>';
 
     corpo += '<div class="totais"><div><span>Subtotal</span><span>' + U.preco(sub) + '</span></div>' +
-      (c.forma === 'entrega' ? '<div><span>Entrega</span><span>' + (taxa ? U.preco(taxa) : 'Grátis') + '</span></div>' : '') +
-      '<div class="total"><span>Total</span><span>' + U.preco(sub + taxa) + '</span></div></div>';
+      (c.forma === 'entrega' ? '<div><span>' + V.taxa + '</span><span>' + (taxa ? U.preco(taxa) : 'Grátis') + '</span></div>' : '') +
+      '<div class="total"><span>Total' + (temACombinar() ? ' (fora os itens a combinar)' : '') + '</span><span>' + U.preco(sub + taxa) + '</span></div></div>';
 
     var abaixoMinimo = c.forma === 'entrega' && estab.pedido_minimo && sub < estab.pedido_minimo;
     var rodape = '<button type="button" class="btn cheio" id="enviarPedidoBtn" ' + (c.enviando || abaixoMinimo || !aberta ? 'disabled' : '') + '>' +
-      (c.enviando ? '<span class="spin"></span>Enviando…' : !aberta ? 'Loja fechada agora' : abaixoMinimo ? 'Mínimo p/ entrega: ' + U.preco(estab.pedido_minimo) : 'Enviar pedido<span class="valor">' + U.preco(sub + taxa) + '</span>') + '</button>';
+      (c.enviando ? '<span class="spin"></span>Enviando…' : !aberta ? 'Loja fechada agora' : abaixoMinimo ? 'Mínimo p/ entrega: ' + U.preco(estab.pedido_minimo) : V.enviar + '<span class="valor">' + U.preco(sub + taxa) + '</span>') + '</button>';
 
     var corpoAtual = $('sheetConteudo').querySelector('.sheet-corpo');
     var scroll = sheetNome === 'checkout' && corpoAtual ? corpoAtual.scrollTop : 0;
-    abrirSheet('checkout', cabecaSheet('Finalizar pedido', 'carrinho') + '<div class="sheet-corpo">' + corpo + '</div><div class="sheet-rodape">' + rodape + '</div>');
+    abrirSheet('checkout', cabecaSheet(V.finalizar, 'carrinho') + '<div class="sheet-corpo">' + corpo + '</div><div class="sheet-rodape">' + rodape + '</div>');
     var novo = $('sheetConteudo').querySelector('.sheet-corpo');
     if (novo) novo.scrollTop = c.erro && focoErro ? 0 : scroll;
     var tel = $('ckTel');
@@ -660,6 +691,38 @@
     if ($('ckRef')) c.referencia = $('ckRef').value;
     if ($('ckTroco')) c.troco = $('ckTroco').value;
     if ($('ckObs')) c.obs = $('ckObs').value;
+    if ($('ckModelo')) c.modelo = $('ckModelo').value;
+  }
+
+  function blocoGps() {
+    var g = checkout.gps;
+    if (g && g.status === 'ok') {
+      return '<div class="gps-box ok"><span class="gps-icone">' + U.ICONES.check + '</span><div class="gps-texto"><strong>Localização enviada</strong>' +
+        '<small>Precisão de ~' + g.precisao + ' m · <a class="link-acao" style="padding:0" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' + g.lat + ',' + g.lng + '">conferir no mapa</a></small></div>' +
+        '<button type="button" class="link-acao" data-gps>Atualizar</button></div>';
+    }
+    if (g && g.status === 'buscando') {
+      return '<div class="gps-box buscando"><span class="gps-icone">' + U.ICONES.gps + '</span><div class="gps-texto"><strong>Pegando sua localização…</strong><small>Se o celular perguntar, toque em "Permitir".</small></div></div>';
+    }
+    return '<div class="gps-box' + (g && g.status === 'erro' ? ' erro' : '') + '"><span class="gps-icone">' + U.ICONES.gps + '</span><div class="gps-texto"><strong>Enviar minha localização</strong>' +
+      '<small>' + (g && g.msg ? esc(g.msg) : 'O jeito mais rápido de a gente te achar.') + '</small></div>' +
+      '<button type="button" class="btn mini" data-gps>Usar GPS</button></div>';
+  }
+
+  function pegarLocalizacao() {
+    lerCamposCheckout();
+    if (!navigator.geolocation) { checkout.gps = { status: 'erro', msg: 'Seu aparelho não liberou a localização — digite o endereço.' }; renderCheckout(); return; }
+    checkout.gps = { status: 'buscando' };
+    renderCheckout();
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      if (sheetNome === 'checkout') lerCamposCheckout();
+      checkout.gps = { status: 'ok', lat: Number(pos.coords.latitude.toFixed(6)), lng: Number(pos.coords.longitude.toFixed(6)), precisao: Math.round(pos.coords.accuracy || 0) };
+      if (sheetNome === 'checkout') renderCheckout();
+    }, function (err) {
+      if (sheetNome === 'checkout') lerCamposCheckout();
+      checkout.gps = { status: 'erro', msg: err && err.code === 1 ? 'Você não permitiu a localização. Libere nas configurações do navegador ou digite o endereço.' : 'Não consegui pegar a localização agora. Digite o endereço ou tente de novo.' };
+      if (sheetNome === 'checkout') renderCheckout();
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 });
   }
 
   async function buscarClientePorTelefone() {
@@ -691,7 +754,8 @@
     if (c.nome.trim().length < 2) erros.push(['ckNome', 'Digite seu nome']);
     var tel = U.soDigitos(c.telefone);
     if (tel.length < 10 || tel.length > 11) erros.push(['ckTel', 'WhatsApp com DDD, ex.: (15) 99999-9999']);
-    if (c.forma === 'entrega' && c.endereco.trim().length < 5) erros.push(['ckEnd', 'Informe rua, número e bairro']);
+    var temGps = c.gps && c.gps.status === 'ok';
+    if (c.forma === 'entrega' && c.endereco.trim().length < 5 && !temGps) erros.push(['ckEnd', SERVICO ? 'Envie sua localização pelo GPS ou digite onde você está' : 'Informe rua, número e bairro']);
     if (c.pagamento === 'dinheiro' && c.troco && Number(c.troco) < subtotal() + (c.forma === 'entrega' ? Number(estab.taxa_entrega || 0) : 0)) {
       erros.push(['ckTroco', 'O troco precisa ser maior que o total']);
     }
@@ -738,7 +802,10 @@
         p_referencia: c.forma === 'entrega' ? (c.referencia.trim() || null) : null,
         p_forma_pagamento: c.pagamento,
         p_troco_para: c.pagamento === 'dinheiro' && c.troco ? Number(c.troco) : null,
-        p_observacao: c.obs.trim() || null
+        p_observacao: c.obs.trim() || null,
+        p_lat: c.forma === 'entrega' && c.gps && c.gps.status === 'ok' ? c.gps.lat : null,
+        p_lng: c.forma === 'entrega' && c.gps && c.gps.status === 'ok' ? c.gps.lng : null,
+        p_detalhes: SERVICO ? { veiculo: c.veiculo, modelo: (c.modelo || '').trim() || null, precisao_m: c.gps && c.gps.status === 'ok' ? c.gps.precisao : null } : null
       });
       if (resp.error) {
         c.enviando = false;
@@ -750,13 +817,14 @@
       resultado = resp.data;
     }
 
-    U.gravarLocal(CLIENTE_KEY, { nome: c.nome.trim(), telefone: U.soDigitos(c.telefone), endereco: c.endereco.trim(), referencia: c.referencia.trim() });
+    U.gravarLocal(CLIENTE_KEY, { nome: c.nome.trim(), telefone: U.soDigitos(c.telefone), endereco: c.endereco.trim(), referencia: c.referencia.trim(), veiculo: c.veiculo, modelo: (c.modelo || '').trim() });
     if (!MODO_DEMO) {
       var lista = U.lerLocal(PEDIDOS_KEY, []);
       lista.unshift({ id: resultado.id, numero: resultado.numero, loja: estab.nome, slug: estab.slug, cidade: estab.cidade, ts: Date.now() });
       U.gravarLocal(PEDIDOS_KEY, lista.slice(0, 20));
     }
-    var dados = { nome: c.nome.trim(), telefone: c.telefone, forma: c.forma, endereco: c.endereco.trim(), referencia: c.referencia.trim(), pagamento: c.pagamento, troco: c.troco, obs: c.obs.trim() };
+    var dados = { nome: c.nome.trim(), telefone: c.telefone, forma: c.forma, endereco: c.endereco.trim(), referencia: c.referencia.trim(), pagamento: c.pagamento, troco: c.troco, obs: c.obs.trim(),
+      gps: c.forma === 'entrega' && c.gps && c.gps.status === 'ok' ? c.gps : null, veiculo: c.veiculo, modelo: (c.modelo || '').trim() };
     carrinho = [];
     salvarCarrinho();
     renderizarCarrinhoBar();
@@ -775,18 +843,24 @@
   }
 
   function mensagemPedido(p, d) {
-    var L = ['*Pedido #' + p.numero + ' — ' + estab.nome + '*', ''];
+    var L = ['*' + V.pedido + ' #' + p.numero + ' — ' + estab.nome + '*', ''];
     (p.itens || []).forEach(function (l) {
-      L.push(l.qtd + 'x ' + l.descricao + ' — ' + U.preco(l.total));
+      L.push(l.qtd + 'x ' + l.descricao + ' — ' + U.precoOuCombinar(l.total));
       if (l.obs) L.push('   _' + l.obs + '_');
     });
     L.push('');
     L.push('Subtotal: ' + U.preco(p.subtotal));
-    if (d.forma === 'entrega') L.push('Entrega: ' + (Number(p.taxa_entrega) ? U.preco(p.taxa_entrega) : 'grátis'));
-    L.push('*Total: ' + U.preco(p.total) + '*');
+    if (d.forma === 'entrega') L.push(V.taxa + ': ' + (Number(p.taxa_entrega) ? U.preco(p.taxa_entrega) : 'grátis'));
+    L.push('*Total: ' + U.preco(p.total) + '*' + ((p.itens || []).some(function (l) { return !(Number(l.total) > 0); }) ? ' + itens a combinar' : ''));
     L.push('');
     L.push('Nome: ' + d.nome);
-    L.push(d.forma === 'entrega' ? 'Entregar em: ' + d.endereco + (d.referencia ? ' (' + d.referencia + ')' : '') : 'Vou retirar na loja');
+    if (d.forma === 'entrega') {
+      if (d.endereco || d.referencia) L.push(V.entregarEm + ': ' + (d.endereco && d.referencia ? d.endereco + ' (' + d.referencia + ')' : (d.endereco || d.referencia)));
+      if (d.gps) L.push('Localização: https://maps.google.com/?q=' + d.gps.lat + ',' + d.gps.lng);
+    } else {
+      L.push(V.voceRetira);
+    }
+    if (d.veiculo || d.modelo) L.push('Veículo: ' + [d.veiculo, d.modelo].filter(Boolean).join(' — '));
     if (d.pagamento) L.push('Pagamento: ' + (U.PAGAMENTOS[d.pagamento] || d.pagamento) + (d.pagamento === 'dinheiro' && d.troco ? ' — troco para ' + U.preco(d.troco) : ''));
     if (d.obs) L.push('Obs.: ' + d.obs);
     return L.join('\n');
@@ -794,11 +868,11 @@
 
   function abrirSucesso(p, d) {
     var corpo = '<div class="sucesso"><div class="sucesso-check">' + U.ICONES.check + '</div>' +
-      '<h3>Pedido enviado!</h3><span class="numero-pedido">Pedido #' + p.numero + ' · ' + U.preco(p.total) + '</span>' +
-      '<p>A loja já recebeu seu pedido. Toque abaixo pra mandar a confirmação no WhatsApp — assim vocês conversam por lá se precisar.</p></div>';
+      '<h3>' + V.enviado + '</h3><span class="numero-pedido">' + V.pedido + ' #' + p.numero + ' · ' + U.preco(p.total) + '</span>' +
+      '<p>' + V.recebido + ' Toque abaixo pra mandar a confirmação no WhatsApp — assim vocês conversam por lá se precisar.</p></div>';
     var rodape = '<a class="btn whats cheio" id="sucessoWhats" href="' + esc(linkWhats(mensagemPedido(p, d))) + '" target="_blank" rel="noopener">' + U.ICONES.whats + 'Enviar no WhatsApp</a>';
     abrirSheet('sucesso', cabecaSheet('Tudo certo') + '<div class="sheet-corpo">' + corpo +
-      (MODO_DEMO ? '' : '<button type="button" class="btn sec cheio" data-abrir="meusPedidos" style="margin-top:.4rem">Acompanhar pedido</button>') +
+      (MODO_DEMO ? '' : '<button type="button" class="btn sec cheio" data-abrir="meusPedidos" style="margin-top:.4rem">Acompanhar ' + V.pedido.toLowerCase() + '</button>') +
       '</div><div class="sheet-rodape">' + rodape + '</div>');
   }
 
@@ -814,21 +888,19 @@
 
   var ETAPAS = ['novo', 'preparando', 'saiu_entrega', 'concluido'];
   function rotuloStatus(status, forma) {
-    if (status === 'novo') return 'Recebido pela loja';
-    if (status === 'preparando') return 'Em preparo';
-    if (status === 'saiu_entrega') return forma === 'retirada' ? 'Pronto pra retirar' : 'Saiu pra entrega';
-    if (status === 'concluido') return forma === 'retirada' ? 'Retirado' : 'Entregue';
-    return 'Cancelado';
+    if (status === 'saiu_entrega') return forma === 'retirada' ? V.st.saiu_retirada : V.st.saiu_entrega;
+    if (status === 'concluido') return forma === 'retirada' ? V.st.concluido_retirada : V.st.concluido;
+    return V.st[status] || 'Cancelado';
   }
 
   async function abrirMeusPedidos() {
     var lista = U.lerLocal(PEDIDOS_KEY, []);
     if (!lista.length || MODO_DEMO) {
-      abrirSheet('pedidos', cabecaSheet('Meus pedidos') + '<div class="sheet-corpo"><p class="sheet-desc" style="text-align:center;padding:2rem 0">Seus pedidos feitos neste aparelho aparecem aqui, com o andamento em tempo real.</p></div>');
+      abrirSheet('pedidos', cabecaSheet(V.meusPedidos) + '<div class="sheet-corpo"><p class="sheet-desc" style="text-align:center;padding:2rem 0">Seus pedidos feitos neste aparelho aparecem aqui, com o andamento em tempo real.</p></div>');
       return;
     }
     if (sheetNome !== 'pedidos') {
-      abrirSheet('pedidos', cabecaSheet('Meus pedidos') + '<div class="sheet-corpo"><div class="skeleton-item" style="height:120px;margin-bottom:.8rem"></div><div class="skeleton-item" style="height:120px"></div></div>');
+      abrirSheet('pedidos', cabecaSheet(V.meusPedidos) + '<div class="sheet-corpo"><div class="skeleton-item" style="height:120px;margin-bottom:.8rem"></div><div class="skeleton-item" style="height:120px"></div></div>');
     }
     var r = await window.db.rpc('delivery_pedidos_status_publico', { p_ids: lista.map(function (p) { return p.id; }) });
     if (sheetNome !== 'pedidos') return;
@@ -840,13 +912,24 @@
       }).join('');
       var quando = new Date(p.criado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
       return '<div class="pedido-card"><div class="pedido-card-topo"><strong>#' + p.numero + ' · ' + esc(p.loja) + '</strong><span>' + U.preco(p.total) + '</span></div>' +
-        '<small>' + quando + ' · ' + (p.forma_entrega === 'retirada' ? 'Retirada' : 'Entrega') + '</small>' +
+        '<small>' + quando + ' · ' + (p.forma_entrega === 'retirada' ? V.retiradaCurta : V.entrega) + '</small>' +
         '<div class="timeline">' + barras + '</div>' +
         '<div class="timeline-rotulo' + (p.status === 'cancelado' ? ' cancelado' : '') + '">' + rotuloStatus(p.status, p.forma_entrega) + '</div></div>';
     }).join('') || '<p class="sheet-desc">Nenhum pedido encontrado.</p>';
-    $('sheetConteudo').innerHTML = cabecaSheet('Meus pedidos') + '<div class="sheet-corpo">' + html +
+    $('sheetConteudo').innerHTML = cabecaSheet(V.meusPedidos) + '<div class="sheet-corpo">' + html +
       '<p class="sheet-desc" style="font-size:.76rem;text-align:center;margin-top:.6rem">Atualiza sozinho a cada 15 segundos.</p></div>';
     if (!timerPedidos) timerPedidos = setInterval(function () { if (sheetNome === 'pedidos') abrirMeusPedidos(); else pararPollingPedidos(); }, 15000);
+  }
+
+  /* ===================== socorro rápido (atendimento no local) ===================== */
+  function abrirSocorro() {
+    var corpo = '<p class="sheet-desc">Escolha o que aconteceu — no próximo passo você manda a localização.</p><div class="opcoes" style="margin-top:.8rem">' +
+      cardapio.itens.map(function (i) {
+        return '<button type="button" class="opcao" data-socorro="' + i.id + '"><span class="marca">' + U.ICONES.check + '</span>' +
+          '<span class="opcao-nome">' + esc(i.nome) + (i.descricao ? '<br><small style="font-weight:500;color:var(--ink-faint)">' + esc(i.descricao) + '</small>' : '') + '</span>' +
+          '<span class="opcao-extra">' + U.precoOuCombinar(i.preco) + '</span></button>';
+      }).join('') + '</div>';
+    abrirSheet('socorro', cabecaSheet('Qual é o problema?') + '<div class="sheet-corpo">' + corpo + '</div>');
   }
 
   /* ===================== sobre a loja ===================== */
@@ -961,6 +1044,16 @@
       if (comboCard) { abrirCombo(comboCard.getAttribute('data-combo')); return; }
 
       if (e.target.closest('[data-fechar-sheet]')) { fecharSheet(); return; }
+      if (e.target.closest('#btnSocorro')) { abrirSocorro(); return; }
+      var soc = e.target.closest('[data-socorro]');
+      if (soc) {
+        var escolhido = itemPorId(soc.getAttribute('data-socorro'));
+        if (escolhido && !carrinho.some(function (l) { return l.item_id === escolhido.id; })) {
+          adicionarAoCarrinho({ tipo: 'item', item_id: escolhido.id, meio_item_id: null, borda_id: null, qtd: 1, obs: '', descricao: escolhido.nome, preco: Number(escolhido.preco) });
+        }
+        abrirCheckout();
+        return;
+      }
       var voltar = e.target.closest('[data-voltar]');
       if (voltar) { lerCamposCheckout(); abrirCarrinho(); return; }
 
@@ -1006,6 +1099,9 @@
           return;
         }
         if (e.target.closest('#enviarPedidoBtn')) { enviarPedido(); return; }
+        if (e.target.closest('[data-gps]')) { pegarLocalizacao(); return; }
+        var vc = e.target.closest('[data-veiculo]');
+        if (vc) { lerCamposCheckout(); checkout.veiculo = vc.getAttribute('data-veiculo'); renderCheckout(); return; }
       }
     });
 

@@ -83,7 +83,7 @@
     $('beneficios').innerHTML = beneficios.map(function (b) {
       return '<div class="beneficio">' + b[0] + '<strong>' + b[1] + '</strong><span>' + b[2] + '</span></div>';
     }).join('');
-    var exemplos = [['forno', 'pizzaria'], ['classico', 'pizzaria'], ['neon', 'hamburgueria'], ['vidro', 'acaiteria'], ['feira', 'mercado'], ['patinhas', 'petshop'], ['noir', 'japonesa']];
+    var exemplos = [['forno', 'pizzaria'], ['asfalto', 'borracharia'], ['classico', 'pizzaria'], ['neon', 'hamburgueria'], ['vidro', 'acaiteria'], ['feira', 'mercado'], ['patinhas', 'petshop'], ['noir', 'japonesa']];
     $('vitrine').innerHTML = exemplos.map(function (e) {
       var t = T.obter(e[0]);
       return '<div class="vitrine-item"><div class="vitrine-tela"><iframe loading="lazy" tabindex="-1" title="Template ' + esc(t.nome) + '" src="/perfil.html?demo=' + e[1] + '&tpl=' + e[0] + '&mini=1"></iframe></div><small>' + esc(t.nome) + '</small></div>';

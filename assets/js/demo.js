@@ -106,6 +106,26 @@
       bordas: [], combos: []
     }
   };
+  var H24 = { '0': [['00:00', '24:00']], '1': [['00:00', '24:00']], '2': [['00:00', '24:00']], '3': [['00:00', '24:00']], '4': [['00:00', '24:00']], '5': [['00:00', '24:00']], '6': [['00:00', '24:00']] };
+  DADOS.borracharia = {
+    nome: 'Borracharia Móvel 24h', descricao: 'Pneu furou? A gente vai até você em qualquer bairro da cidade, 24 horas. Carro, moto, caminhonete e caminhão.',
+    aviso: 'Socorro 24h em toda a cidade — mande sua localização que a gente chega.',
+    horarios: H24, taxa_entrega: 15, tempo_min: 20, tempo_max: 40,
+    categorias: [{ id: 'c1', nome: 'Socorro no local' }, { id: 'c2', nome: 'Reparos' }, { id: 'c3', nome: 'Pneus' }, { id: 'c4', nome: 'Na borracharia' }],
+    itens: [
+      it('r1', 'c1', 'Troca pelo estepe', 'Tiramos o furado e colocamos o estepe, onde você estiver', 50),
+      it('r2', 'c1', 'Pneu de moto furado', 'Reparo no local sem tirar a roda (quando possível)', 35),
+      it('r3', 'c1', 'Carga de bateria', 'Chupeta com cabo e verificação rápida', 40),
+      it('r4', 'c2', 'Remendo a frio', 'Furo simples na banda de rodagem', 35),
+      it('r5', 'c2', 'Vulcanização (remendo a quente)', 'Pra corte maior ou furo que o remendo simples não segura', 70),
+      it('r6', 'c2', 'Calibragem + conferência', 'Calibra os 4 pneus e confere estepe e válvulas', 15),
+      it('r7', 'c3', 'Pneu novo', 'Traga a medida (ex.: 175/70 R13) — orçamento na hora', 0),
+      it('r8', 'c3', 'Pneu remold', 'Opção econômica, com garantia — orçamento na hora', 0),
+      it('r9', 'c4', 'Balanceamento (por roda)', 'Na borracharia, com máquina', 15),
+      it('r10', 'c4', 'Alinhamento', 'Na borracharia', 70)
+    ],
+    bordas: [], combos: []
+  };
   DADOS.lanchonete = DADOS.hamburgueria;
   DADOS.restaurante = DADOS.japonesa;
 
@@ -117,7 +137,8 @@
         id: 'demo', nome: base.nome, slug: 'demo', cidade: 'itapetininga', segmento: seg,
         telefone_whatsapp: '15999999999', template: template || 'forno', cor_destaque: null,
         descricao: base.descricao, aviso: base.aviso || null,
-        tempo_entrega_min: 30, tempo_entrega_max: 50, taxa_entrega: 6, pedido_minimo: 25,
+        tempo_entrega_min: base.tempo_min || 30, tempo_entrega_max: base.tempo_max || 50,
+        taxa_entrega: base.taxa_entrega != null ? base.taxa_entrega : 6, pedido_minimo: seg === 'borracharia' ? null : 25,
         aceita_entrega: true, aceita_retirada: true,
         status_manual: 'aberto', horarios: base.horarios,
         formas_pagamento: ['pix', 'cartao', 'dinheiro'], chave_pix: 'pix@exemplo.com.br',

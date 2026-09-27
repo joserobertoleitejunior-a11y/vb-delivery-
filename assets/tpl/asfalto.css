@@ -1,0 +1,81 @@
+/* Template ASFALTO — borracharia / socorro automotivo.
+   Asfalto granulado, amarelo de sinalização, faixa zebrada preto e
+   amarelo, linha tracejada de estrada e letreiro condensado. */
+:root {
+  --bg: #15171a;
+  --bg-2: #1b1e22;
+  --surface: #202328;
+  --surface-2: #2a2e34;
+  --line: rgba(255, 255, 255, 0.09);
+  --ink: #f4f4f1;
+  --ink-soft: rgba(244, 244, 241, 0.7);
+  --ink-faint: rgba(244, 244, 241, 0.42);
+  --accent: #ffc400;
+  --accent-2: #e0a800;
+  --accent-rgb: 255, 196, 0;
+  --on-accent: #111111;
+  --ok: #5fd68b;
+  --ok-rgb: 95, 214, 139;
+  --danger: #ff5a4f;
+  --font-body: 'Barlow', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Bebas Neue', 'Barlow', sans-serif;
+  --display-weight: 400;
+  --display-transform: uppercase;
+  --display-spacing: 0.03em;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 8px;
+  --topbar-bg: rgba(21, 23, 26, 0.9);
+  --cart-bg: var(--accent);
+  --zebra: repeating-linear-gradient(-45deg, #111 0 12px, var(--accent) 12px 24px);
+}
+
+/* asfalto: granulado fininho + mancha de luz de poste */
+.bg-deco {
+  background:
+    radial-gradient(ellipse 60% 40% at 80% -5%, rgba(255, 196, 0, 0.1), transparent 70%),
+    repeating-radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px),
+    repeating-radial-gradient(circle at 70% 60%, rgba(0, 0, 0, 0.25) 0 1px, transparent 1px 4px),
+    var(--bg);
+}
+
+.hero::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 10px; background: var(--zebra); opacity: 0.9; }
+.hero-conteudo { padding-bottom: 2rem; }
+.hero-eyebrow { color: var(--accent); letter-spacing: 0.24em; }
+.hero-titulo { font-size: clamp(2.8rem, 13vw, 4.2rem); line-height: 0.92; letter-spacing: 0.02em; }
+.hero-titulo::after { content: ''; display: block; width: 110px; height: 6px; margin: 0.7rem auto 0; background: repeating-linear-gradient(90deg, var(--accent) 0 22px, transparent 22px 34px); }
+.hero.com-capa .hero-capa::after { background: linear-gradient(180deg, rgba(21, 23, 26, 0.3), rgba(21, 23, 26, 0.75) 55%, var(--bg)); }
+.chip-info { background: #111; border-color: rgba(255, 196, 0, 0.35); color: var(--ink); }
+.chip-info svg { color: var(--accent); }
+
+.nav-pill { background: transparent; border-color: rgba(255, 255, 255, 0.16); color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.72rem; }
+.nav-pill.ativo, .nav-pill:hover { background: var(--accent); color: #111; border-color: var(--accent); }
+
+/* título de categoria em cima de uma "faixa de estrada" tracejada */
+.cardapio-categoria-titulo { font-size: 1.6rem; color: var(--ink); padding-bottom: 0.45rem; background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.55) 0 18px, transparent 18px 30px) left bottom / 100% 3px no-repeat; }
+
+.item-card { background: linear-gradient(160deg, var(--surface-2), var(--surface)); border-left: 4px solid var(--accent); }
+.item-card:hover { border-color: rgba(255, 196, 0, 0.5); border-left-color: var(--accent); }
+.item-mono { background: #111; color: var(--accent); border: 2px solid rgba(255, 196, 0, 0.35); border-radius: 50%; }
+.item-foto { border-radius: 8px; }
+.item-preco { color: var(--accent); font-family: var(--font-display); font-size: 1.2rem; font-weight: 400; letter-spacing: 0.03em; }
+.item-add { border-radius: 8px; background: var(--accent); color: #111; box-shadow: 0 6px 16px rgba(255, 196, 0, 0.3); }
+
+.especial-card { background: #111; border: 2px solid var(--accent); position: relative; overflow: hidden; }
+.especial-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: var(--zebra); }
+.especial-icone { border-radius: 8px; background: var(--accent); color: #111; margin-left: 6px; }
+
+/* botão de socorro do topo */
+.hero-socorro { background: var(--accent); color: #111; }
+.hero-socorro::before { background: var(--zebra); }
+
+.cart-resumo { border-radius: 10px; color: #111; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 0 2px #111, 0 0 0 4px var(--accent); }
+.cart-qtd { background: #111; color: var(--accent); }
+.sheet-painel { border-top: 4px solid var(--accent); border-radius: 14px 14px 0 0; }
+.sheet-titulo { font-size: 1.5rem; }
+.btn { border-radius: 8px; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.86rem; color: #111; }
+.btn.sec { color: var(--ink); }
+.btn.whats { color: #062b14; }
+.seg, .opcao, .campo input, .campo textarea, .qtd, .totais { border-radius: 8px; }
+.seg button { border-radius: 6px; }
+.toast { background: var(--accent); color: #111; }

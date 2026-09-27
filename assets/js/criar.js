@@ -12,7 +12,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var esc = U.escapeHtml;
 
-  var SEGS_RAPIDOS = ['pizzaria', 'hamburgueria', 'lanchonete', 'restaurante', 'japonesa', 'marmitaria', 'acaiteria', 'doceria', 'padaria', 'mercado', 'adega', 'petshop'];
+  var SEGS_RAPIDOS = ['pizzaria', 'hamburgueria', 'lanchonete', 'restaurante', 'japonesa', 'marmitaria', 'acaiteria', 'doceria', 'padaria', 'mercado', 'adega', 'petshop', 'borracharia'];
 
   var passo = 0;
   var sessao = null;
