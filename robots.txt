@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /cadastro.html
+Disallow: /criar.html
+Disallow: /perfil.html

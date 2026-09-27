@@ -1,46 +1,63 @@
 # VB Delivery
 
-Cardápio digital multi-tenant + pedido direto pelo WhatsApp, para pizzarias, petshops, mercados e afins.
+Cardápio digital multi-tenant com pedido direto no WhatsApp e no painel da loja — pizzarias, hamburguerias, açaí, mercados, petshops e afins.
 
 ## Onde isso se encaixa
 
-VB Delivery é um **nicho da plataforma VB**, irmão do [vb-espaco](https://github.com/joserobertoleitejunior-a11y/vb-espaco) (agendamento — salões, barbearias, estética automotiva). Cada nicho é seu próprio produto/repositório, com layout e fluxo pensados pra sua realidade — aqui não existe agenda nem profissional, existe **cardápio, carrinho e pedido**. Um terceiro nicho (orçamento a domicílio — eletricista, pedreiro, jardineiro etc.) está planejado como produto separado, seguindo o mesmo modelo.
+VB Delivery é um app da **plataforma VB**, irmão do [vb-espaco](https://github.com/joserobertoleitejunior-a11y/vb-espaco) (VB Agenda — salões, barbearias, estúdios). Cada app tem repositório, layout e fluxo próprios; os dois compartilham o mesmo Supabase:
 
-Os três produtos são divulgados juntos: "tudo em um só", do comerciante ao cliente final.
+- `auth.users` — um login só pra todos os apps VB
+- `vb_clientes_globais` — cliente identificado pelo telefone em toda a plataforma
+- `vb_apps` — lista dos apps e a URL de cada um (a transição entre apps lê daqui)
+- `delivery_*` — tabelas deste app
 
-## O que é compartilhado com o resto da plataforma
+Um terceiro app (VB Orçamentos — quem vai até a casa do cliente fazer orçamento) está previsto no mesmo modelo.
 
-Mesmo projeto Supabase do vb-espaco (`oeracgvnuomcaydmizzj`), só que com tabelas próprias:
+## Páginas
 
-- `auth.users` — login do dono do estabelecimento (e-mail/senha), único pra toda a plataforma.
-- `vb_clientes_globais` — identidade do cliente por telefone, única pra toda a plataforma. Base para o futuro perfil social de cliente (seguir, avaliar, etc.) valer nos três nichos.
-- `delivery_*` — tudo que é específico do Delivery (estabelecimentos, cardápio, pedidos). Não tem relação com as tabelas `tenant_*` do vb-espaco.
+| Rota | Arquivo | O que é |
+|---|---|---|
+| `/` | `index.html` + `home.js` | Catálogo das lojas pro cliente + vitrine pro lojista |
+| `/:loja/:cidade` | `perfil.html` + `perfil.js` | Site da loja: cardápio, carrinho, checkout, acompanhar pedido |
+| `/criar.html` | `criar.js` | Criação em 4 passos (conta, negócio, link, visual) |
+| `/cadastro.html` | `cadastro.js` | Painel: Pedidos (Caixa), Cardápio, Loja, Resumo |
 
-O "motor" (wizard de criação, painel do dono, site público multi-tenant por `/:slug/:cidade`) foi **reimplementado do zero** aqui, não copiado — mesma filosofia usada pra recriar a Pizza em Dobro dentro da plataforma: mesma ideia, código novo, pensado pro fluxo real de delivery.
+`_worker.js` faz o roteamento no Cloudflare Workers (mesmo esquema do vb-espaco).
 
-## Estrutura
+## Templates
 
-```
-criar.html + assets/js/criar.js       → login/cadastro do dono + wizard de criação do estabelecimento
-cadastro.html + assets/js/cadastro.js → painel do dono: Cardápio (categorias/itens/bordas) + Pedidos (Caixa)
-perfil.html + assets/js/perfil.js     → site público do estabelecimento, rota /:slug/:cidade
-assets/css/styles.css                 → template "Forno" (v1) — tema escuro/quente
-```
+Estrutura única (`assets/css/base.css`) e cada template só troca tokens, fontes e ornamentos (`assets/tpl/<chave>.css`, registro em `assets/js/templates.js`):
 
-## Layout do site público (por quê é diferente do vb-espaco)
+- **Forno** — escuro e quente, brasas subindo, letreiro Bangers
+- **Clássico** — cardápio impresso: papel creme, bordô, dourado, pontilhado nome→preço
+- **Noir** — preto e dourado champanhe, título com brilho metálico
+- **Vidro** — transparente: vidro fosco sobre aurora colorida em movimento
+- **Feira** — claro, verde folha e limão, preço em etiqueta
+- **Patinhas** — petshop, lilás e menta, patinhas no fundo
+- **Neon** — letreiro neon piscando e grade retrô
 
-Segue a arquitetura de informação real de um app de pedido — não é um reskin do hero-com-foto de salão:
+A cor de destaque escolhida pelo dono calcula sozinha o contraste do texto. Prévia ao vivo de qualquer template: `/perfil.html?demo=<segmento>&tpl=<chave>`.
 
-`topbar compacto (hamburger + nome + status) → drawer lateral → hero com nome grande → pílulas de categoria fixas (sticky) → busca → cardápio direto embaixo → carrinho flutuante no rodapé`
+## Pedido
 
-Meio a meio cobra o valor da metade mais cara + borda (regra padrão do setor). Combos têm preço fixo por sabores escolhidos.
+- O preço é **recalculado no banco** (`delivery_criar_pedido`) a partir dos IDs — o navegador não manda preço.
+- Meio a meio cobra o sabor mais caro + borda; combo tem preço fixo; pedido mínimo vale só pra entrega.
+- Loja fechada (manual ou pelo horário de Brasília, inclusive faixa que passa da meia-noite) não recebe pedido.
+- Número curto por loja (#1, #2…), limite anti-spam por telefone.
+- Depois de enviar: tela de sucesso com a mensagem pronta pro WhatsApp e "Meus pedidos" com andamento ao vivo.
 
-## Pedido: cai no Caixa E no WhatsApp
+## Painel
 
-Ao finalizar, o pedido é gravado em `delivery_pedidos` (aparece na aba Pedidos do painel do dono, com status novo → preparando → saiu para entrega → concluído) **e** abre o WhatsApp com o resumo — as duas coisas, não uma ou outra.
+- **Pedidos (Caixa)**: chega sozinho com som/vibração, aceitar → saiu/pronto → concluir, cancelar, WhatsApp do cliente, abrir/fechar a loja na hora.
+- **Impressora térmica**: Bluetooth (Web Bluetooth), app RawBT no Android (Bluetooth comum), cabo USB/serial (Web Serial) ou qualquer impressora pelo navegador; 58/80 mm; impressão automática.
+- **Cardápio**: itens com foto (compressão + Storage `delivery-fotos/<uid>/…`), disponível/esgotado num toque, categorias com ordem, bordas, combos.
+- **Loja**: link, compartilhar, QR Code, capa/logo, entrega, pagamento/Pix, horários, template + cor com prévia do site real.
+- **Resumo**: hoje, 7/30/90 dias, ticket médio, gráfico por dia, mais vendidos.
 
-## Status (v1 — primeira fatia funcional)
+## Publicar (Cloudflare)
 
-Feito: schema completo, wizard de criação, site público (cardápio + meio a meio + combo + carrinho + checkout), painel com CRUD de categorias/itens/bordas e fila de pedidos.
-
-Ainda não: CRUD de combos no painel (a tabela e a renderização pública já existem, falta a UI de criação), tela de "meus estabelecimentos" pra dono com mais de um, sistema de templates (por enquanto só "Forno"), impressora térmica (bluetooth/USB) no painel, página institucional/sobre, catálogo/homepage geral do VB Delivery.
+1. Cloudflare → Workers & Pages → Create → conectar este repositório (o `wrangler.toml` já define o nome `vb-delivery`).
+2. A URL fica `https://vb-delivery.<sua-conta>.workers.dev`.
+3. Registrar a URL na plataforma pra aparecer nos outros apps:
+   `update vb_apps set url = 'https://vb-delivery.<sua-conta>.workers.dev' where chave = 'delivery';`
+4. Supabase → Authentication → URL Configuration: adicionar a URL nova em *Redirect URLs* (confirmação de e-mail e "esqueci a senha").

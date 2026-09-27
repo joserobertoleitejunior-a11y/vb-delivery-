@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR" data-tpl="forno">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>VB Delivery · Peça direto da loja, sem taxa de app</title>
+<meta name="description" content="Pizzarias, lanchonetes, açaí, mercados e petshops da sua cidade com pedido direto no WhatsApp da loja. E pra lojista: cardápio digital pronto em 2 minutos.">
+<meta name="theme-color" content="#150a06">
+<meta property="og:title" content="VB Delivery">
+<meta property="og:description" content="Peça direto da loja, sem taxa de aplicativo.">
+<meta property="og:type" content="website">
+<link rel="icon" href="/assets/img/icone.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/img/icone-192.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/base.css?v=3">
+<link rel="stylesheet" href="/assets/tpl/forno.css?v=3">
+<link rel="stylesheet" href="/assets/css/home.css?v=3">
+</head>
+<body style="padding-bottom:0">
+<div class="bg-deco" aria-hidden="true"></div>
+
+<header class="h-topo" id="topo">
+  <a class="h-marca" href="/"><img src="/assets/img/icone.svg" alt="">VB Delivery</a>
+  <a class="btn mini sec" href="/cadastro.html" style="padding:.6rem .9rem;font-size:.8rem">Sou lojista</a>
+</header>
+
+<section class="h-hero">
+  <h1>Pede<span>.</span><br>Direto<br>da loja<span>.</span></h1>
+  <p>Os deliveries da sua cidade com pedido direto no WhatsApp da loja — sem taxa de aplicativo pra ninguém.</p>
+  <div class="h-busca"><span id="iconeBusca"></span><input type="search" id="busca" placeholder="Pizza, açaí, lanche, petshop…" aria-label="Buscar lojas"></div>
+</section>
+
+<div id="acompanhar"></div>
+
+<div class="h-segs" id="segmentos"></div>
+
+<section class="h-secao">
+  <h2>Lojas <small id="contagem"></small></h2>
+  <div class="lojas" id="lojas">
+    <div class="skeleton-item" style="height:190px"></div><div class="skeleton-item" style="height:190px"></div>
+  </div>
+</section>
+
+<section class="h-lojista" id="lojista">
+  <div class="h-lojista-inner">
+    <p class="hero-eyebrow">Pra quem vende</p>
+    <h2>Seu cardápio<br>no ar em <span>2 minutos</span></h2>
+    <p>Cardápio digital com a cara da sua loja, pedido caindo no painel e no seu WhatsApp, impressão na térmica e sem comissão por pedido.</p>
+    <div class="beneficios" id="beneficios"></div>
+    <div class="vitrine" id="vitrine"></div>
+    <div class="h-cta">
+      <a class="btn" href="/criar.html">Criar meu delivery grátis</a>
+      <a class="btn sec" href="/cadastro.html">Já tenho conta</a>
+    </div>
+  </div>
+</section>
+
+<div class="h-plataforma oculto" id="plataforma"></div>
+
+<footer class="h-rodape">
+  <div><strong>VB Delivery</strong> faz parte da plataforma VB</div>
+  <div id="rodapeApps"></div>
+  <div>Itapetininga · SP</div>
+</footer>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/assets/js/supabase-client.js?v=1"></script>
+<script src="/assets/js/util.js?v=3"></script>
+<script src="/assets/js/templates.js?v=3"></script>
+<script src="/assets/js/home.js?v=3"></script>
+</body>
+</html>
