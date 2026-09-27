@@ -1,5 +1,7 @@
 # VB Delivery
 
+> **Arquivado — virou área do app único.** Delivery e Serviços agora moram dentro do [vb-espaco](https://github.com/joserobertoleitejunior-a11y/vb-espaco) (mesmo login, mesmo estabelecimento): loja em `/:slug/:cidade/pedir`, painel em `/painel-area.html`, troca de área pelo botão-cubo. Este repositório fica só como referência; não publicar.
+
 Cardápio digital multi-tenant com pedido direto no WhatsApp e no painel da loja — pizzarias, hamburguerias, açaí, mercados, petshops e afins.
 
 ## Onde isso se encaixa
