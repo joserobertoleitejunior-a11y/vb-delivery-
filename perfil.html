@@ -5,27 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>VB Delivery</title>
 <meta name="description" content="Cardápio digital e pedido direto pelo WhatsApp.">
-<meta name="theme-color" content="#150a06">
+<meta name="theme-color" content="#ffffff">
 <link rel="icon" href="/assets/img/icone.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="/assets/css/base.css?v=3">
-<script src="/assets/js/templates.js?v=3"></script>
+<link rel="stylesheet" href="/assets/css/base.css?v=4">
+<script src="/assets/js/templates.js?v=4"></script>
 <script>
-  /* aplica o template o quanto antes pra não piscar o tema errado: se veio
-     no link (?tpl=) usa ele, senão o último template visto dessa loja */
+  /* aplica o estilo o quanto antes pra não piscar o visual errado: se veio
+     no link (?tpl=) usa ele, senão o último visual visto dessa loja */
   (function () {
     var q = new URLSearchParams(location.search);
     if (q.get('mini') === '1') document.documentElement.classList.add('mini');
-    var tpl = q.get('tpl');
-    if (!tpl) { try { tpl = localStorage.getItem('vbdelivery_tpl_' + location.pathname); } catch (e) {} }
-    VBTemplates.aplicar(tpl || 'forno');
+    var tpl = q.get('tpl'), layout = q.get('layout'), salvo = null;
+    if (!tpl) { try { salvo = JSON.parse(localStorage.getItem('vbdelivery_visual_' + location.pathname) || 'null'); } catch (e) {} }
+    if (salvo) VBTemplates.aplicar(salvo.t, salvo.c, salvo.l);
+    else VBTemplates.aplicar(tpl || 'simples', null, layout);
   })();
 </script>
 </head>
 <body>
-<div class="bg-deco" aria-hidden="true"></div>
-
 <header id="topbar">
   <button type="button" class="icon-btn" id="tbMenuBtn" aria-label="Abrir menu"></button>
   <div class="tb-brand"><span class="tb-logo" id="tbLogo"></span><span id="tbNome">Carregando…</span></div>
@@ -42,15 +41,15 @@
     <button type="button" class="drawer-link" data-abrir="meusPedidos"><span>Meus pedidos</span><span class="badge" id="badgePedidos"></span></button>
     <button type="button" class="drawer-link" data-abrir="sobre"><span>Sobre a loja</span></button>
     <a class="drawer-link" id="drawerWhats" target="_blank" rel="noopener"><span>Falar no WhatsApp</span></a>
-    <div class="drawer-rodape">Feito com <strong>VB Delivery</strong></div>
+    <div class="drawer-rodape">Feito com VB Delivery</div>
   </nav>
 </div>
 
 <main id="estadoCarregando" aria-busy="true">
-  <div style="padding:2.2rem 0 1rem;">
-    <div class="skeleton-linha" style="width:34%;height:12px;margin:0 auto 1rem;"></div>
-    <div class="skeleton-linha" style="width:68%;height:34px;margin:0 auto .8rem;"></div>
-    <div class="skeleton-linha" style="width:52%;height:14px;margin:0 auto 1.6rem;"></div>
+  <div style="padding:1.6rem var(--g) 1.4rem;">
+    <div class="skeleton-linha" style="width:58%;height:30px;margin-bottom:.7rem;"></div>
+    <div class="skeleton-linha" style="width:36%;height:14px;margin-bottom:1.6rem;"></div>
+    <div class="skeleton-linha" style="width:100%;height:48px;"></div>
   </div>
   <div class="skeleton-cartoes">
     <div class="skeleton-item"></div><div class="skeleton-item"></div><div class="skeleton-item"></div><div class="skeleton-item"></div>
@@ -58,32 +57,35 @@
 </main>
 
 <main id="estadoNaoEncontrado" class="oculto estado-vazio">
-  <p class="hero-eyebrow">Ops</p>
   <h1 class="hero-titulo">Não achamos esse cardápio</h1>
   <p class="hero-sub">Confere o link com quem te enviou.</p>
 </main>
 
 <div id="estadoPronto" class="oculto">
-  <header class="hero" id="heroSecao">
-    <div class="hero-capa" id="heroCapa"></div>
-    <div class="hero-conteudo">
+  <header class="loja" id="heroSecao">
+    <div class="loja-capa" id="heroCapa"></div>
+    <div class="loja-cabeca">
       <div class="hero-logo" id="heroLogo"></div>
-      <p class="hero-eyebrow" id="heroEyebrow"></p>
-      <h1 class="hero-titulo" id="heroTitulo"></h1>
-      <p class="hero-sub" id="heroSub"></p>
-      <div class="hero-info" id="heroInfo"></div>
+      <div class="loja-id">
+        <h1 class="hero-titulo" id="heroTitulo"></h1>
+        <p class="hero-eyebrow" id="heroEyebrow"></p>
+      </div>
     </div>
+    <p class="hero-sub" id="heroSub"></p>
+    <p class="loja-status" id="heroStatus"></p>
+    <div class="hero-info" id="heroInfo"></div>
+    <button type="button" class="loja-mais" data-abrir="sobre" id="heroMais">Horários, endereço e pagamento</button>
   </header>
 
   <div class="aviso-loja oculto" id="avisoFechado" role="status"></div>
   <div class="promo-banner oculto" id="promoBanner"></div>
 
-  <nav class="nav-pills oculto" id="navPills" aria-label="Categorias"></nav>
-
   <div class="busca-wrap">
     <span id="buscaIcone"></span>
     <input type="search" class="busca-box" id="buscaBox" placeholder="Buscar no cardápio" autocomplete="off" aria-label="Buscar no cardápio">
   </div>
+
+  <nav class="nav-pills oculto" id="navPills" aria-label="Categorias"></nav>
 
   <div id="cardapioConteudo"></div>
   <p class="busca-vazia oculto" id="buscaVazia">Nada encontrado com esse nome.</p>
@@ -111,8 +113,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/assets/js/supabase-client.js?v=1"></script>
-<script src="/assets/js/util.js?v=3"></script>
-<script src="/assets/js/demo.js?v=3"></script>
-<script src="/assets/js/perfil.js?v=3"></script>
+<script src="/assets/js/util.js?v=4"></script>
+<script src="/assets/js/demo.js?v=4"></script>
+<script src="/assets/js/perfil.js?v=4"></script>
 </body>
 </html>

@@ -1,100 +1,117 @@
-/* VB Delivery — homepage (catálogo pro cliente + vitrine pro lojista). */
+/* VB Delivery — início (catálogo das lojas). Mesma montagem do catálogo
+   do VB Agenda: herói centralizado, busca redonda, chips e cartões. */
 
-.h-topo { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem 5vw; background: var(--topbar-bg); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid transparent; transition: border-color 0.2s ease; }
-.h-topo.rolou { border-color: var(--line); }
-.h-marca { display: flex; align-items: center; gap: 0.55rem; font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; letter-spacing: -0.03em; margin-right: auto; }
-.h-marca img { width: 34px; height: 34px; }
+.container { max-width: 640px; margin: 0 auto; padding: 0 1.25rem; }
 
-.h-hero { position: relative; padding: 2.6rem 5vw 1.4rem; text-align: center; overflow: hidden; }
-.h-hero h1 {
-  font-family: var(--font-display); font-weight: 800; letter-spacing: -0.045em;
-  font-size: clamp(2.7rem, 12.5vw, 5rem); line-height: 0.98;
+.catalogo-hero { padding: 2.1rem 1.25rem 1.5rem; text-align: center; }
+.catalogo-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  margin: 0 0 0.55rem;
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--destaque);
 }
-.h-hero h1 em { font-style: normal; color: var(--accent); }
-.h-hero p { color: var(--ink-soft); margin: 0.9rem auto 0; max-width: 40ch; line-height: 1.55; }
-.h-busca { position: relative; max-width: 560px; margin: 1.4rem auto 0; }
-.h-busca svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--ink-faint); }
-.h-busca input { width: 100%; padding: 1rem 1rem 1rem 3rem; border-radius: var(--radius-pill); border: 1px solid var(--line); background: var(--surface); color: var(--ink); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); }
-.h-busca input:focus { outline: none; border-color: rgba(var(--accent-rgb), 0.6); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.15); }
+.catalogo-hero h1 { font-size: clamp(1.5rem, 5vw, 2.05rem); margin: 0 0 0.55rem; letter-spacing: -0.01em; line-height: 1.22; }
+.catalogo-hero-sub { color: var(--tinta-suave); font-size: 0.94rem; max-width: 30rem; margin: 0 auto; line-height: 1.5; }
 
-.h-segs { display: flex; gap: 0.5rem; overflow-x: auto; padding: 1.1rem 5vw 0.4rem; scrollbar-width: none; max-width: 1100px; margin: 0 auto; }
-.h-segs::-webkit-scrollbar { display: none; }
-.h-segs button { flex-shrink: 0; }
+.app-busca { position: relative; margin: 0 0 1rem; }
+.app-busca svg { position: absolute; left: 0.95rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--tinta-suave); opacity: 0.8; pointer-events: none; }
+.app-busca input {
+  width: 100%;
+  padding: 0.85rem 1rem 0.85rem 2.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--borda);
+  background: var(--branco);
+  font-size: max(16px, 0.95rem);
+  -webkit-appearance: none; appearance: none;
+}
+.app-busca input:focus { outline: 2px solid var(--cor-marca); outline-offset: 1px; }
 
-.h-secao { max-width: 1100px; margin: 0 auto; padding: 1.2rem 5vw; }
-.h-secao > h2 { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.03em; font-size: 1.6rem; margin-bottom: 0.9rem; }
-.h-secao > h2 small { font-family: var(--font-body); font-weight: 600; font-size: 0.8rem; letter-spacing: 0; color: var(--ink-faint); margin-left: 0.5rem; }
+.contagem { font-size: 0.8rem; color: var(--tinta-suave); margin: -0.4rem 0 0.7rem; min-height: 1em; }
+.contagem:empty { display: none; }
 
-.lojas { display: grid; grid-template-columns: 1fr; gap: 0.9rem; }
-.loja-card { display: block; border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); border: 1px solid var(--line); transition: transform 0.2s var(--ease-out), border-color 0.2s ease, box-shadow 0.25s ease; animation: vbEntra 0.45s var(--ease-out) both; }
-.loja-card:hover { transform: translateY(-3px); border-color: rgba(var(--accent-rgb), 0.4); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3); }
-.loja-card:active { transform: scale(0.99); }
-.loja-capa { position: relative; height: 118px; background: center / cover no-repeat; }
-.loja-capa::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, 0.45)); }
-.loja-status { position: absolute; top: 10px; right: 10px; z-index: 1; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.28rem 0.6rem; border-radius: var(--radius-pill); background: rgba(0, 0, 0, 0.55); color: #9ef0a8; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
-.loja-status.fechada { color: #ffb4b4; }
-.loja-corpo { display: flex; gap: 0.8rem; align-items: center; padding: 0 1rem 1rem; margin-top: -26px; position: relative; z-index: 1; }
-.loja-logo { width: 58px; height: 58px; flex-shrink: 0; border-radius: 16px; border: 3px solid var(--surface); background: var(--surface-2) center / cover no-repeat; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; color: #fff; }
-.loja-info { flex: 1; min-width: 0; padding-top: 26px; }
-.loja-info strong { display: block; font-size: 1.02rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.loja-info small { display: block; font-size: 0.8rem; color: var(--ink-soft); margin-top: 0.1rem; }
-.loja-meta { display: flex; gap: 0.7rem; flex-wrap: wrap; font-size: 0.76rem; color: var(--ink-faint); margin-top: 0.35rem; }
-.loja-meta span { display: inline-flex; align-items: center; gap: 0.25rem; }
-.loja-meta svg { width: 13px; height: 13px; }
+/* cartão da loja (mesmo desenho do catálogo do Agenda) */
+.lojas { display: flex; flex-direction: column; gap: 1rem; }
+.loja-card {
+  display: block;
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 16px;
+  overflow: hidden;
+  animation: vbEntra 0.3s var(--ease-out) both;
+  transition: transform 0.12s ease;
+}
+.loja-card:active { transform: scale(0.98) translateY(2px); }
+.loja-card:focus-visible { outline: 2px solid var(--destaque); outline-offset: 2px; }
+.loja-card .loja-capa { height: 92px; background: center / cover no-repeat; }
+.loja-card .loja-corpo { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; }
+.loja-card .loja-logo {
+  width: 54px; height: 54px; flex-shrink: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--branco), 0 0 0 4px var(--borda);
+  background: var(--linho) center / cover no-repeat;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 1.05rem;
+}
+.loja-card .loja-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+.loja-card .loja-info strong { font-weight: 800; font-size: 1.02rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.loja-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.loja-tag {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--linho);
+  font-size: 0.72rem; font-weight: 700;
+  color: var(--tinta-suave);
+}
+.loja-tag svg { width: 12px; height: 12px; }
+.loja-tag.aberta { background: rgba(30, 122, 61, 0.1); color: var(--ok); }
+.loja-tag.fechada { background: rgba(192, 57, 43, 0.08); color: var(--danger); }
+.loja-seta { color: var(--tinta-suave); font-size: 1.1rem; }
 
-.h-vazio { text-align: center; padding: 2rem 1rem; border: 1px dashed var(--line); border-radius: var(--radius-lg); color: var(--ink-soft); line-height: 1.6; }
-.h-vazio strong { display: block; color: var(--ink); font-size: 1.05rem; margin-bottom: 0.3rem; }
+/* chamada pro lojista / vazio (igual ao Agenda) */
+.catalogo-cta {
+  text-align: center;
+  padding: 2rem 1.25rem;
+  margin-top: 1.25rem;
+  border: 1px dashed var(--borda);
+  border-radius: 16px;
+  background: var(--branco);
+}
+.catalogo-cta-icone { display: flex; justify-content: center; color: var(--destaque); margin-bottom: 0.5rem; }
+.catalogo-cta-titulo { font-weight: 800; margin: 0 0 0.3rem; }
+.catalogo-cta-texto { color: var(--tinta-suave); font-size: 0.88rem; margin: 0 auto 1.1rem; max-width: 26rem; line-height: 1.5; }
+.lojas-vazio { text-align: center; color: var(--tinta-suave); padding: 1.6rem 0 0.4rem; }
 
-.h-acompanhar { display: flex; align-items: center; gap: 0.8rem; margin: 0 auto; max-width: 560px; padding: 0.85rem 1rem; border-radius: var(--radius); background: rgba(var(--ok-rgb), 0.12); border: 1px solid rgba(var(--ok-rgb), 0.35); color: var(--ink); font-size: 0.88rem; }
-.h-acompanhar svg { width: 22px; height: 22px; color: var(--ok); flex-shrink: 0; }
+/* acompanhar pedido recente */
+.h-acompanhar {
+  display: flex; align-items: center; gap: 0.8rem;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--raio);
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-left: 3px solid var(--ok);
+  font-size: 0.9rem;
+}
+.h-acompanhar svg { width: 20px; height: 20px; color: var(--ok); flex-shrink: 0; }
 .h-acompanhar b { color: var(--ok); margin-left: auto; white-space: nowrap; }
 
-/* vitrine pro lojista */
-.h-lojista { position: relative; margin-top: 1.5rem; padding: 2.6rem 5vw; background: var(--ink); color: var(--bg); overflow: hidden; }
-.h-lojista .hero-eyebrow { color: var(--mostarda); }
-.h-lojista > .h-lojista-inner > p { color: rgba(255, 247, 236, 0.72) !important; }
-.h-lojista .beneficio { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.1); color: #fff7ec; }
-.h-lojista .beneficio span { color: rgba(255, 247, 236, 0.66); }
-.h-lojista .beneficio svg { color: var(--mostarda); }
-.h-lojista .vitrine-item small { color: rgba(255, 247, 236, 0.7); }
-.h-lojista .btn.sec { background: rgba(255, 255, 255, 0.08); color: #fff7ec; border-color: rgba(255, 255, 255, 0.18); }
-.h-lojista .grifo { color: var(--mostarda); background: none; padding: 0; }
-@media (prefers-color-scheme: dark) { .h-lojista { background: #0c0806; color: var(--ink); } .h-lojista .grifo { color: var(--mostarda); background: none; padding: 0; } }
-.h-lojista-inner { max-width: 1100px; margin: 0 auto; }
-.h-lojista h2 { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.04em; font-size: clamp(2rem, 9vw, 3.2rem); line-height: 1.02; }
-.h-lojista > .h-lojista-inner > p { color: var(--ink-soft); margin-top: 0.8rem; max-width: 52ch; line-height: 1.6; }
-.beneficios { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin: 1.5rem 0; }
-.beneficio { padding: 1rem; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); }
-.beneficio svg { width: 26px; height: 26px; color: var(--accent); margin-bottom: 0.5rem; }
-.beneficio strong { display: block; font-size: 0.92rem; }
-.beneficio span { display: block; font-size: 0.78rem; color: var(--ink-soft); margin-top: 0.25rem; line-height: 1.45; }
-.vitrine { display: flex; gap: 0.9rem; overflow-x: auto; padding: 0.5rem 0 1rem; scroll-snap-type: x mandatory; scrollbar-width: none; }
-.vitrine::-webkit-scrollbar { display: none; }
-.vitrine-item { flex: 0 0 170px; scroll-snap-align: start; }
-.vitrine-tela { position: relative; width: 170px; height: 300px; border-radius: 22px; overflow: hidden; border: 3px solid #2a2a2a; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4); background: #000; }
-.vitrine-tela iframe { position: absolute; top: 0; left: 0; width: 390px; height: 690px; border: 0; transform: scale(0.4359); transform-origin: 0 0; pointer-events: none; }
-.vitrine-item small { display: block; text-align: center; margin-top: 0.5rem; font-weight: 700; font-size: 0.82rem; color: var(--ink-soft); }
-.h-cta { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
-.h-cta .btn { padding: 1rem 1.4rem; }
-
-.h-plataforma { max-width: 1100px; margin: 0 auto; padding: 1.4rem 5vw 0; }
-.plat-card { display: flex; align-items: center; gap: 1rem; padding: 1.1rem 1.2rem; border-radius: var(--radius-lg); background: linear-gradient(120deg, rgba(15, 107, 92, 0.35), rgba(15, 107, 92, 0.1)); border: 1px solid rgba(90, 200, 170, 0.35); }
+/* outros apps da plataforma */
+.plat-card {
+  display: flex; align-items: center; gap: 1rem;
+  margin-top: 1rem;
+  padding: 1.1rem 1.2rem;
+  border-radius: 16px;
+  background: var(--branco);
+  border: 1px solid var(--borda);
+}
 .plat-card strong { display: block; font-size: 1rem; }
-.plat-card span { display: block; font-size: 0.82rem; color: var(--ink-soft); margin-top: 0.2rem; }
-.plat-card .btn { white-space: nowrap; background: #0f6b5c; color: #fff; }
-@media (max-width: 719px) {
+.plat-card span { display: block; font-size: 0.85rem; color: var(--tinta-suave); margin-top: 0.2rem; }
+.plat-card .btn { white-space: nowrap; background: #0F6B5C; color: #fff; margin-left: auto; }
+@media (max-width: 560px) {
   .plat-card { flex-direction: column; align-items: stretch; }
-  .plat-card .btn { width: 100%; }
+  .plat-card .btn { width: 100%; margin: 0; }
 }
-@media (min-width: 720px) { .plat-card .btn { margin-left: auto; } }
 
-.h-rodape { text-align: center; padding: 2.5rem 5vw 2rem; color: var(--ink-faint); font-size: 0.8rem; line-height: 1.8; }
-.h-rodape a { color: var(--ink-soft); }
-
-@media (min-width: 720px) {
-  .lojas { grid-template-columns: repeat(2, 1fr); }
-  .beneficios { grid-template-columns: repeat(4, 1fr); }
-}
-@media (min-width: 1040px) {
-  .lojas { grid-template-columns: repeat(3, 1fr); }
-}
+.h-rodape { text-align: center; padding: 2.2rem 1.25rem 1.5rem; color: var(--tinta-suave); font-size: 0.8rem; line-height: 1.8; }
+.h-rodape a { color: var(--tinta); font-weight: 700; }

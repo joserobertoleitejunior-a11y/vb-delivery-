@@ -2,7 +2,7 @@
    1. conta (mesmo login de toda a plataforma VB)
    2. negócio (nome, segmento, cidade, WhatsApp)
    3. endereço do site
-   4. visual (template com prévia ao vivo do segmento escolhido) */
+   4. visual: estilo (paleta/letra) + layout do cardápio, com prévia ao vivo */
 (function () {
   'use strict';
 
@@ -17,10 +17,12 @@
   var passo = 0;
   var sessao = null;
   var modoConta = 'criar';
-  var dados = { nome: '', segmento: 'pizzaria', cidade: 'Itapetininga', whats: '', slug: '', slugTocado: false, template: null };
+  var dados = { nome: '', segmento: 'pizzaria', cidade: 'Itapetininga', whats: '', slug: '', slugTocado: false, template: null, layout: null };
+  var TITULOS = ['Sua conta', 'Seu negócio', 'Endereço do site', 'Visual do site'];
 
   function progresso() {
-    document.querySelectorAll('#progresso span').forEach(function (s, i) { s.classList.toggle('feito', i <= passo); });
+    $('passoRotulo').textContent = 'Passo ' + (passo + 1) + ' de 4: ' + TITULOS[passo];
+    $('passoBarra').style.width = ((passo + 1) / 4 * 100) + '%';
   }
 
   function render() {
@@ -36,9 +38,9 @@
   /* ---------- 1. conta ---------- */
   function passoConta() {
     var criar = modoConta === 'criar';
-    $('passo').innerHTML = '<div class="cw-passo">' +
-      '<p class="hero-eyebrow">Passo 1 de 4</p><h1>' + (criar ? 'Crie sua conta' : 'Entre na sua conta') + '</h1>' +
-      '<p class="hero-sub">' + (criar ? 'Grátis pra começar. É a mesma conta de todos os apps VB.' : 'Use o mesmo e-mail do VB Agenda, se já tiver.') + '</p>' +
+    $('passo').innerHTML = '<div class="cw-card">' +
+      '<h1>' + (criar ? 'Crie sua conta' : 'Entre na sua conta') + '</h1>' +
+      '<p class="cw-intro">' + (criar ? 'Grátis pra começar. É a mesma conta do VB Agenda e dos outros apps VB.' : 'Use o mesmo e-mail do VB Agenda, se já tiver.') + '</p>' +
       '<form id="formConta" novalidate>' +
       '<div class="campo"><label for="cEmail">E-mail</label><input type="email" id="cEmail" autocomplete="email"></div>' +
       '<div class="campo"><label for="cSenha">Senha</label><input type="password" id="cSenha" autocomplete="' + (criar ? 'new-password' : 'current-password') + '" minlength="6"></div>' +
@@ -71,12 +73,12 @@
 
   /* ---------- 2. negócio ---------- */
   function passoNegocio() {
-    $('passo').innerHTML = '<div class="cw-passo">' +
-      '<p class="hero-eyebrow">Passo 2 de 4</p><h1>Seu negócio</h1><p class="hero-sub">O básico pra montar sua página.</p>' +
+    $('passo').innerHTML = '<div class="cw-card">' +
+      '<h1>Seu negócio</h1><p class="cw-intro">O básico pra montar sua página.</p>' +
       '<div class="campo"><label for="nNome">Nome do estabelecimento</label><input id="nNome" maxlength="80" value="' + esc(dados.nome) + '" placeholder="Ex.: Pizza em Dobro"></div>' +
-      '<div class="grupo-titulo" style="margin-top:1rem">O que você vende?</div>' +
+      '<p class="cw-rotulo">O que você vende?</p>' +
       '<div class="segs">' + SEGS_RAPIDOS.map(function (s) {
-        return '<button type="button" class="seg-op' + (dados.segmento === s ? ' ativo' : '') + '" data-seg="' + s + '">' + esc(U.SEGMENTOS[s].replace(' / bebidas', '').replace('Comida ', '')) + '</button>';
+        return '<button type="button" class="seg-op' + (dados.segmento === s ? ' ativo' : '') + '" data-seg="' + s + '">' + esc(U.SEGMENTOS[s].replace(' / bebidas', '').replace('Comida japonesa', 'Japonesa')) + '</button>';
       }).join('') + '</div>' +
       '<div class="linha-campos"><div class="campo"><label for="nCidade">Cidade</label><input id="nCidade" maxlength="60" value="' + esc(dados.cidade) + '"></div>' +
       '<div class="campo"><label for="nWhats">WhatsApp dos pedidos</label><input id="nWhats" type="tel" inputmode="numeric" value="' + esc(dados.whats) + '" placeholder="(15) 99999-9999"></div></div>' +
@@ -106,8 +108,8 @@
   /* ---------- 3. endereço ---------- */
   function passoEndereco() {
     var cidadeSlug = U.slugificar(dados.cidade);
-    $('passo').innerHTML = '<div class="cw-passo">' +
-      '<p class="hero-eyebrow">Passo 3 de 4</p><h1>Endereço do seu site</h1><p class="hero-sub">É o link que você vai mandar pros clientes. Dá pra mudar depois.</p>' +
+    $('passo').innerHTML = '<div class="cw-card">' +
+      '<h1>Endereço do seu site</h1><p class="cw-intro">É o link que você vai mandar pros clientes. Dá pra mudar depois.</p>' +
       '<div class="campo"><label for="eSlug">Nome no link</label><input id="eSlug" maxlength="60" value="' + esc(dados.slug) + '" autocapitalize="off" autocomplete="off" spellcheck="false"></div>' +
       '<div class="url-previa" id="urlPrevia"></div><p class="p-msg" id="endMsg"></p></div>';
     var atualizar = function () {
@@ -126,29 +128,54 @@
   }
 
   /* ---------- 4. visual ---------- */
-  function passoVisual() {
+  function layoutEscolhido() { return dados.layout || T.obter(dados.template).layout; }
+
+  function srcPrevia(tpl) {
     var seg = VBDemo.segmentos.indexOf(dados.segmento) !== -1 ? dados.segmento : 'pizzaria';
+    return '/perfil.html?demo=' + seg + '&tpl=' + tpl + '&layout=' + layoutEscolhido() + '&mini=1';
+  }
+
+  function passoVisual() {
     var sugerido = T.sugeridoPara(dados.segmento);
-    $('passo').innerHTML = '<div class="cw-passo">' +
-      '<p class="hero-eyebrow">Passo 4 de 4</p><h1>Escolha o visual</h1><p class="hero-sub">Prévia ao vivo com um cardápio de exemplo. Troca quando quiser pelo painel.</p>' +
+    $('passo').innerHTML = '<div class="cw-card">' +
+      '<h1>Visual do site</h1><p class="cw-intro">Escolha o estilo e o jeito que o cardápio aparece. A prévia usa um cardápio de exemplo — e dá pra trocar tudo depois no painel.</p>' +
+      '<p class="cw-rotulo">Estilo</p>' +
       '<div class="tpl-grade" id="grade">' + T.lista.map(function (t) {
         return '<button type="button" class="tpl-card' + (t.chave === dados.template ? ' ativo' : '') + '" data-tpl="' + t.chave + '">' +
-          (t.chave === sugerido ? '<span class="tpl-sugerido">Sugerido</span>' : '') +
-          '<span class="tpl-marca">' + U.ICONES.check + '</span>' +
-          '<div class="tpl-janela"><iframe loading="lazy" tabindex="-1" title="Prévia ' + esc(t.nome) + '" src="/perfil.html?demo=' + seg + '&tpl=' + t.chave + '&mini=1"></iframe></div>' +
-          '<div class="tpl-rotulo"><strong>' + esc(t.nome) + '</strong><small>' + esc(t.descricao) + '</small></div></button>';
-      }).join('') + '</div><p class="p-msg" id="visMsg"></p></div>';
+          '<div class="tpl-janela"><iframe loading="lazy" tabindex="-1" title="Prévia ' + esc(t.nome) + '" src="' + srcPrevia(t.chave) + '"></iframe></div>' +
+          '<div class="tpl-rotulo"><strong>' + esc(t.nome) + (t.chave === sugerido ? ' <em>sugerido</em>' : '') + '</strong><small>' + esc(t.descricao) + '</small></div></button>';
+      }).join('') + '</div>' +
+      '<p class="cw-rotulo">Como o cardápio aparece</p>' +
+      '<div class="layouts" id="layouts">' + opcoesLayout() + '</div>' +
+      '<p class="p-msg" id="visMsg"></p></div>';
     ajustar();
-    document.querySelectorAll('[data-tpl]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        dados.template = b.getAttribute('data-tpl');
-        document.querySelectorAll('[data-tpl]').forEach(function (x) { x.classList.toggle('ativo', x === b); });
-      });
+    $('grade').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-tpl]');
+      if (!b) return;
+      dados.template = b.getAttribute('data-tpl');
+      document.querySelectorAll('[data-tpl]').forEach(function (x) { x.classList.toggle('ativo', x === b); });
+      if (!dados.layout) atualizarLayouts();
+    });
+    $('layouts').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-layout]');
+      if (!b) return;
+      dados.layout = b.getAttribute('data-layout');
+      atualizarLayouts();
+      document.querySelectorAll('#grade iframe').forEach(function (f) { f.src = srcPrevia(f.closest('[data-tpl]').getAttribute('data-tpl')); });
     });
     rodape('<button type="button" class="btn sec" id="voltarBtn">Voltar</button><button type="button" class="btn cheio" id="criarBtn">Criar meu delivery</button>');
     $('voltarBtn').addEventListener('click', function () { passo = 2; render(); });
     $('criarBtn').addEventListener('click', criar);
   }
+
+  function opcoesLayout() {
+    var atual = layoutEscolhido();
+    return T.layouts.map(function (l) {
+      return '<button type="button" class="layout-op' + (l.chave === atual ? ' ativo' : '') + '" data-layout="' + l.chave + '">' +
+        T.desenhoLayout(l.chave) + '<span><strong>' + esc(l.nome) + '</strong><small>' + esc(l.descricao) + '</small></span></button>';
+    }).join('');
+  }
+  function atualizarLayouts() { $('layouts').innerHTML = opcoesLayout(); }
 
   function ajustar() {
     document.querySelectorAll('.tpl-janela').forEach(function (j) {
@@ -165,7 +192,8 @@
     btn.innerHTML = '<span class="spin"></span>Criando…';
     var r = await db.rpc('delivery_admin_criar_estabelecimento', {
       p_nome: dados.nome, p_slug: dados.slug, p_cidade: U.slugificar(dados.cidade), p_segmento: dados.segmento,
-      p_telefone_whatsapp: U.soDigitos(dados.whats), p_template: dados.template || 'forno'
+      p_telefone_whatsapp: U.soDigitos(dados.whats), p_template: dados.template || T.sugeridoPara(dados.segmento),
+      p_layout: dados.layout
     });
     if (r.error) {
       btn.disabled = false;
@@ -179,7 +207,7 @@
   }
 
   async function iniciar() {
-    if (!db) { $('passo').innerHTML = '<p class="hero-sub">Sem conexão com o servidor.</p>'; return; }
+    if (!db) { $('passo').innerHTML = '<div class="cw-card"><p class="cw-intro">Sem conexão com o servidor.</p></div>'; return; }
     var s = await db.auth.getSession();
     sessao = s.data && s.data.session;
     passo = sessao ? 1 : 0;

@@ -124,6 +124,27 @@
     return false;
   }
 
+  // Horário em que a faixa atual termina ("23:30"), ou null (manual/24h/sem horário)
+  function fechaAs(estab) {
+    if (!estab || estab.status_manual === 'aberto') return null;
+    var h = estab.horarios || {};
+    if (!Object.keys(h).length || aberto24h(h)) return null;
+    var agora = agoraBrasilia();
+    var hoje = h[String(agora.dow)] || [];
+    for (var i = 0; i < hoje.length; i++) {
+      var a = paraMinutos(hoje[i][0]), f = paraMinutos(hoje[i][1]);
+      if ((f > a && agora.minutos >= a && agora.minutos < f) || (f <= a && agora.minutos >= a)) {
+        if (hoje[i][0] === '00:00' && (hoje[i][1] === '24:00' || hoje[i][1] === '23:59')) return null; // dia inteiro
+        return (hoje[i][1] === '24:00' || hoje[i][1] === '00:00') ? 'meia-noite' : hoje[i][1];
+      }
+    }
+    var ontem = h[String((agora.dow + 6) % 7)] || [];
+    for (var j = 0; j < ontem.length; j++) {
+      if (paraMinutos(ontem[j][1]) <= paraMinutos(ontem[j][0]) && agora.minutos < paraMinutos(ontem[j][1])) return ontem[j][1];
+    }
+    return null;
+  }
+
   // "Abre hoje às 18:00" / "Abre amanhã às 11:00" / "Abre sexta às 18:00"
   function proximaAbertura(estab) {
     if (!estab || estab.status_manual === 'fechado') return null;
@@ -222,7 +243,7 @@
     mascaraTelefone: mascaraTelefone, slugificar: slugificar, cidadeLegivel: cidadeLegivel,
     SEGMENTOS: SEGMENTOS, DIAS: DIAS, PAGAMENTOS: PAGAMENTOS,
     modoDoSegmento: modoDoSegmento, vocab: vocab, aberto24h: aberto24h, precoOuCombinar: precoOuCombinar,
-    lojaAberta: lojaAberta, proximaAbertura: proximaAbertura, descreverHorarioDia: descreverHorarioDia,
+    lojaAberta: lojaAberta, proximaAbertura: proximaAbertura, fechaAs: fechaAs, descreverHorarioDia: descreverHorarioDia,
     ICONES: ICONES, toast: toast, lerLocal: lerLocal, gravarLocal: gravarLocal, mensagemErro: mensagemErro
   };
 })(window);

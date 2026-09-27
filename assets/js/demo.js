@@ -135,7 +135,7 @@
     return {
       estabelecimento: {
         id: 'demo', nome: base.nome, slug: 'demo', cidade: 'itapetininga', segmento: seg,
-        telefone_whatsapp: '15999999999', template: template || 'forno', cor_destaque: null,
+        telefone_whatsapp: '15999999999', template: template || (global.VBTemplates ? global.VBTemplates.sugeridoPara(segmento) : 'simples'), cor_destaque: null,
         descricao: base.descricao, aviso: base.aviso || null,
         tempo_entrega_min: base.tempo_min || 30, tempo_entrega_max: base.tempo_max || 50,
         taxa_entrega: base.taxa_entrega != null ? base.taxa_entrega : 6, pedido_minimo: seg === 'borracharia' ? null : 25,

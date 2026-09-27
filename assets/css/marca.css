@@ -1,81 +1,131 @@
-/* Identidade própria do VB Delivery (homepage, criar, painel).
-   Não é template de loja: é a marca do app. Vermelho "molho", amarelo
-   "mostarda" e creme — cores de delivery, que abrem o apetite. De noite
-   (tema escuro do aparelho) vira a versão escura automaticamente. */
+/* Visual do app VB Delivery (início, criar, painel).
+   É o MESMO visual do VB Agenda — letra do sistema, fundo linho com a
+   moldura bem clarinha, topo branco, cartões com borda fina e botão
+   redondo. Só a cor da marca muda: o verde do Agenda vira o vermelho
+   tijolo do Delivery. O dourado (#C9A227) é da família toda. */
 :root {
-  --bg: #fff7ec;
-  --bg-2: #ffffff;
-  --surface: #ffffff;
-  --surface-2: #ffefd9;
-  --line: rgba(40, 22, 12, 0.1);
-  --ink: #1d130d;
-  --ink-soft: rgba(29, 19, 13, 0.68);
-  --ink-faint: rgba(29, 19, 13, 0.44);
-  --accent: #f2352b;
-  --accent-2: #c9231b;
-  --accent-rgb: 242, 53, 43;
+  /* nomes do Agenda */
+  --tinta: #1f2024;
+  --tinta-suave: #6b6d76;
+  --linho: #f4f4f6;
+  --linho-fundo: #eceaea;
+  --branco: #ffffff;
+  --destaque: #C9A227;
+  --cor-marca: #B23A28;
+  --cor-marca-escura: #8A2B1D;
+  --borda: #e7e7ea;
+  --raio: 14px;
+
+  /* os mesmos valores nos tokens que os componentes (base.css) usam */
+  --bg: var(--linho);
+  --bg-2: var(--linho);  /* fundo "afundado" dentro de um cartão branco */
+  --surface: var(--branco);
+  --surface-2: var(--linho);
+  --line: var(--borda);
+  --ink: var(--tinta);
+  --ink-soft: var(--tinta-suave);
+  --ink-faint: #9a9ca4;
+  --price: var(--tinta);
+  --accent: var(--cor-marca);
+  --accent-rgb: 178, 58, 40;
   --on-accent: #ffffff;
-  --mostarda: #ffc42e;
-  --mostarda-rgb: 255, 196, 46;
-  --ok: #178a4e;
-  --ok-rgb: 23, 138, 78;
-  --danger: #d6331f;
-  --font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-display: 'Bricolage Grotesque', 'Manrope', sans-serif;
+  --ok: #1e7a3d;
+  --ok-rgb: 30, 122, 61;
+  --danger: #c0392b;
+  --mostarda: var(--destaque);
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-body);
   --display-weight: 800;
   --display-transform: none;
-  --display-spacing: -0.03em;
-  --radius: 18px;
-  --radius-lg: 24px;
-  --shadow: 0 18px 40px rgba(60, 25, 10, 0.16);
-  --card-shadow: 0 2px 10px rgba(60, 25, 10, 0.05);
-  --topbar-bg: rgba(255, 247, 236, 0.88);
-  --cart-bg: var(--accent);
+  --display-spacing: -0.01em;
+  --radius: var(--raio);
+  --radius-sm: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  --shadow: 0 12px 32px rgba(20, 20, 30, 0.12);
+  --topbar-bg: var(--branco);
+  --ease-out: cubic-bezier(.2, .7, .2, 1);
+  --ease-bounce: cubic-bezier(.3, 1.3, .6, 1);
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #150f0b;
-    --bg-2: #1c1511;
-    --surface: #221a15;
-    --surface-2: #2d231c;
-    --line: rgba(255, 230, 210, 0.1);
-    --ink: #fff3e6;
-    --ink-soft: rgba(255, 243, 230, 0.7);
-    --ink-faint: rgba(255, 243, 230, 0.42);
-    --accent: #ff4a3d;
-    --accent-2: #e0342a;
-    --accent-rgb: 255, 74, 61;
-    --ok: #4fd08a;
-    --ok-rgb: 79, 208, 138;
-    --danger: #ff6b5a;
-    --shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
-    --card-shadow: none;
-    --topbar-bg: rgba(21, 15, 11, 0.86);
-    color-scheme: dark;
-  }
+body {
+  font-family: var(--font-body);
+  color: var(--tinta);
+  line-height: 1.5;
+  /* a moldura do Agenda (boiserie) bem sutil no fundo inteiro */
+  background-color: var(--linho);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect x='8' y='8' width='48' height='48' rx='5' fill='none' stroke='%23C9A227' stroke-opacity='0.09' stroke-width='1.4'/%3E%3Crect x='16' y='16' width='32' height='32' rx='3' fill='none' stroke='%23C9A227' stroke-opacity='0.09' stroke-width='1'/%3E%3C/svg%3E");
 }
 
-.bg-deco {
-  background:
-    radial-gradient(circle at 105% -5%, rgba(var(--mostarda-rgb), 0.28) 0 160px, transparent 161px),
-    radial-gradient(circle at -8% 18%, rgba(var(--accent-rgb), 0.1) 0 140px, transparent 141px);
-}
+@keyframes vbEntra { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes vbPop { 0% { transform: scale(0.7); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes vbPisca { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-/* marca: "sublinhado de marca-texto" amarelo atrás de palavras em destaque */
-.grifo {
-  background: linear-gradient(180deg, transparent 58%, rgba(var(--mostarda-rgb), 0.85) 58%, rgba(var(--mostarda-rgb), 0.85) 92%, transparent 92%);
-  padding: 0 0.08em;
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
+/* ===== topo (igual ao Agenda) ===== */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+  padding: 1rem 1.25rem;
+  background: var(--branco);
+  border-bottom: 1px solid var(--borda);
 }
-@media (prefers-color-scheme: dark) {
-  .grifo { background: linear-gradient(180deg, transparent 58%, rgba(var(--mostarda-rgb), 0.45) 58%, rgba(var(--mostarda-rgb), 0.45) 92%, transparent 92%); }
-}
+.brand { display: inline-flex; align-items: center; gap: 0.45rem; font-weight: 800; font-size: 1.15rem; letter-spacing: -0.01em; text-decoration: none; color: var(--tinta); }
+.brand em { color: var(--cor-marca); font-style: normal; }
+.topbar-local { display: flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; font-weight: 700; color: var(--tinta-suave); }
+.topbar-link { font-size: 0.88rem; font-weight: 700; color: var(--tinta); padding: 0.4rem 0.2rem; }
 
-.btn { box-shadow: 0 8px 20px rgba(var(--accent-rgb), 0.25); }
-.btn.sec, .btn.perigo, .btn.whats { box-shadow: none; }
-.item-card, .p-secao, .pa-card, .kpi, .beneficio, .loja-card { box-shadow: var(--card-shadow); }
-.hero-eyebrow { color: var(--accent); }
-.chip-btn.ligado { background: rgba(var(--ok-rgb), 0.12); }
+/* ===== botões (redondos, como no Agenda) ===== */
+.btn { border-radius: 999px; padding: 0.9rem 1.6rem; font-size: 1rem; font-weight: 700; }
+.btn:active { transform: scale(0.98); filter: none; }
+.btn.sec { background: transparent; color: var(--tinta-suave); border: 1px solid var(--borda); }
+.btn.mini { padding: 0.55rem 1rem; font-size: 0.85rem; border-radius: 999px; }
+.btn.perigo { background: transparent; color: var(--danger); border: 1px solid rgba(192, 57, 43, 0.35); }
+
+/* ===== cartão ===== */
+.card { background: var(--branco); border: 1px solid var(--borda); border-radius: var(--raio); padding: 1.5rem; margin: 0 0 1.25rem; }
+.card h2 { margin: 0 0 1rem; font-size: 1.2rem; }
+
+/* ===== chips de filtro ===== */
+.filtros { display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.3rem; margin: 0 0 1.25rem; scrollbar-width: none; }
+.filtros::-webkit-scrollbar { display: none; }
+.chip {
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--borda);
+  background: var(--branco);
+  color: var(--tinta);
+  font: inherit; font-size: 0.88rem; font-weight: 600;
+  white-space: nowrap; cursor: pointer;
+}
+.chip svg { width: 18px; height: 18px; }
+.chip.is-ativo { background: var(--cor-marca); color: var(--branco); border-color: var(--cor-marca); }
+
+/* ===== campos ===== */
+.campo label { font-size: 0.85rem; font-weight: 600; color: var(--tinta-suave); }
+.campo input, .campo textarea, .campo select { border-radius: 10px; background: var(--linho); border-color: var(--borda); }
+.campo input:focus, .campo textarea:focus, .campo select:focus { outline: 2px solid var(--cor-marca); outline-offset: 1px; border-color: var(--borda); }
+
+/* ===== barra de baixo (igual ao Agenda) ===== */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+  display: flex;
+  background: var(--branco);
+  border-top: 1px solid var(--borda);
+  padding: 0.4rem 0.5rem calc(0.4rem + env(safe-area-inset-bottom));
+}
+.tabbar-item {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
+  padding: 0.35rem 0;
+  color: var(--tinta-suave);
+  font-size: 0.7rem; font-weight: 700;
+}
+.tabbar-item svg { width: 20px; height: 20px; }
+.tabbar-item.is-ativo { color: var(--cor-marca); }
+.com-tabbar { padding-bottom: 4.5rem; }
+
+.hero-eyebrow { color: var(--destaque); }
+.icone-inline { display: inline-block; vertical-align: -3px; flex-shrink: 0; }

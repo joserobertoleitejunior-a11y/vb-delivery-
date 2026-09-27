@@ -55,7 +55,7 @@
     $('buscaIcone').outerHTML = U.ICONES.busca;
 
     if (MODO_DEMO) {
-      var d = window.VBDemo.montar(MODO_DEMO, q.get('tpl') || 'forno');
+      var d = window.VBDemo.montar(MODO_DEMO, q.get('tpl'));
       estab = d.estabelecimento;
       cardapio = d.cardapio;
       if (q.get('cor')) estab.cor_destaque = '#' + q.get('cor').replace('#', '');
@@ -71,8 +71,10 @@
 
     V = U.vocab(estab.segmento);
     SERVICO = U.modoDoSegmento(estab.segmento) === 'servico';
-    T.aplicar(q.get('tpl') || estab.template, estab.cor_destaque);
-    try { localStorage.setItem('vbdelivery_tpl_' + location.pathname, estab.template); } catch (e) {}
+    T.aplicar(q.get('tpl') || estab.template, estab.cor_destaque, q.get('layout') || estab.layout);
+    if (!MODO_DEMO && !MODO_PREVIEW) {
+      try { localStorage.setItem('vbdelivery_visual_' + location.pathname, JSON.stringify({ t: estab.template, c: estab.cor_destaque, l: estab.layout })); } catch (e) {}
+    }
 
     CART_KEY = 'vbdelivery_carrinho_' + estab.id;
     carregarCarrinho();
@@ -107,6 +109,7 @@
     if (estab.foto_capa_url) {
       $('heroCapa').style.backgroundImage = 'url("' + encodeURI(estab.foto_capa_url) + '")';
       $('heroSecao').classList.add('com-capa');
+      document.body.classList.add('topo-sobre-capa');
     }
     if (estab.foto_perfil_url) {
       ['heroLogo', 'tbLogo', 'drawerLogo'].forEach(function (id) {
@@ -116,24 +119,25 @@
     } else {
       $('drawerLogo').style.display = 'none';
     }
+    if (!estab.descricao) $('heroSub').classList.add('oculto');
 
-    var chips = [];
-    if (SERVICO && U.aberto24h(estab.horarios)) chips.push(U.ICONES.relogio + '24 horas');
-    if (estab.aceita_entrega && estab.tempo_entrega_min) {
-      chips.push(U.ICONES.relogio + estab.tempo_entrega_min + (estab.tempo_entrega_max && estab.tempo_entrega_max !== estab.tempo_entrega_min ? '–' + estab.tempo_entrega_max : '') + ' ' + V.tempo);
-    }
+    // fatos do cabeçalho: rótulo pequeno em cima, valor embaixo
+    var fatos = [];
+    var tempo = estab.tempo_entrega_min ? estab.tempo_entrega_min + (estab.tempo_entrega_max && estab.tempo_entrega_max !== estab.tempo_entrega_min ? '–' + estab.tempo_entrega_max : '') + ' min' : null;
+    if (SERVICO && U.aberto24h(estab.horarios)) fatos.push(['Atende', '24 horas']);
     if (estab.aceita_entrega) {
-      var icEnt = SERVICO ? U.ICONES.gps : U.ICONES.moto;
-      chips.push(icEnt + (SERVICO
-        ? (estab.taxa_entrega == null ? 'Vai até você' : Number(estab.taxa_entrega) === 0 ? 'Deslocamento grátis' : 'Deslocamento ' + U.preco(estab.taxa_entrega))
-        : (estab.taxa_entrega == null ? 'Entrega' : Number(estab.taxa_entrega) === 0 ? 'Entrega grátis' : 'Entrega ' + U.preco(estab.taxa_entrega))));
+      if (tempo) fatos.push([SERVICO ? 'Chega em' : 'Entrega', tempo]);
+      if (estab.taxa_entrega != null) fatos.push([SERVICO ? 'Deslocamento' : 'Taxa', Number(estab.taxa_entrega) === 0 ? 'Grátis' : U.preco(estab.taxa_entrega)]);
+      if (!SERVICO && estab.pedido_minimo) fatos.push(['Mínimo', U.preco(estab.pedido_minimo)]);
     }
-    if (estab.aceita_retirada) chips.push(U.ICONES.loja + (estab.aceita_entrega ? (SERVICO ? 'Também na loja' : V.retiradaCurta) : V.soRetirada));
-    if (estab.aceita_entrega && estab.pedido_minimo) chips.push(U.ICONES.moeda + 'Mín. ' + U.preco(estab.pedido_minimo));
-    $('heroInfo').innerHTML = chips.map(function (c) { return '<span class="chip-info">' + c + '</span>'; }).join('');
+    if (estab.aceita_retirada && fatos.length < 3) fatos.push([SERVICO ? 'Na loja' : 'Retirada', estab.aceita_entrega ? (SERVICO ? 'Também' : 'Pode retirar') : 'Só retirada']);
+    $('heroInfo').innerHTML = fatos.slice(0, 3).map(function (f) {
+      return '<div class="fato"><span>' + f[0] + '</span><strong>' + esc(f[1]) + '</strong></div>';
+    }).join('');
     if (SERVICO && cardapio.itens.length && !document.getElementById('btnSocorro')) {
       $('heroInfo').insertAdjacentHTML('afterend', '<button type="button" class="hero-socorro" id="btnSocorro">' + U.ICONES.alerta + (estab.segmento === 'borracharia' ? 'Pneu furou? Chamar agora' : 'Chamar agora') + '</button>');
     }
+    if (!Object.keys(estab.horarios || {}).length && !estab.endereco && !(estab.formas_pagamento || []).length) $('heroMais').textContent = 'Sobre a loja';
 
     if (estab.aviso) {
       $('promoBanner').textContent = estab.aviso;
@@ -172,6 +176,15 @@
     st.classList.remove('oculto');
     st.classList.toggle('fechado', !aberta);
     st.textContent = aberta ? 'Aberto' : 'Fechado';
+    var hs = $('heroStatus');
+    hs.classList.toggle('fechado', !aberta);
+    if (aberta) {
+      var ate = MODO_DEMO ? null : U.fechaAs(estab);
+      hs.innerHTML = '<strong>Aberto agora</strong>' + (SERVICO && U.aberto24h(estab.horarios) ? ' · 24 horas' : ate ? ' · até ' + esc(ate) : '');
+    } else {
+      var abre = U.proximaAbertura(estab);
+      hs.innerHTML = '<strong>Fechado</strong>' + (abre ? ' · ' + esc(abre.charAt(0).toLowerCase() + abre.slice(1)) : '');
+    }
     var aviso = $('avisoFechado');
     if (!aberta) {
       var prox = U.proximaAbertura(estab);
@@ -199,45 +212,43 @@
   }
 
   function fotoOuMono(item, classe) {
-    if (item.foto_url) return '<img class="' + classe + '" data-carregando loading="lazy" src="' + esc(item.foto_url) + '" alt="">';
-    return '<div class="item-mono' + (classe === 'sheet-foto' ? ' sheet-foto mono' : '') + '" aria-hidden="true">' + esc((item.nome || '?').trim().charAt(0)) + '</div>';
+    if (!item.foto_url) return '';
+    return '<img class="' + classe + '" data-carregando loading="lazy" src="' + esc(item.foto_url) + '" alt="">';
   }
 
-  function renderItemCard(item) {
-    var tags = [];
-    if (item.permite_meio_a_meio && elegiveisMeio().length > 1) tags.push('Meio a meio');
-    if (aceitaBorda(item)) tags.push('Borda recheada');
-    return (
-      '<article class="item-card" data-item="' + item.id + '" data-busca="' + esc((item.nome + ' ' + (item.descricao || '')).toLowerCase()) + '">' +
-        fotoOuMono(item, 'item-foto') +
-        '<div class="item-corpo">' +
-          '<div class="item-topo"><h3 class="item-nome">' + esc(item.nome) + '</h3><span class="item-leader"></span>' +
-            '<span class="item-preco">' + U.precoOuCombinar(item.preco) + '</span></div>' +
-          (item.descricao ? '<p class="item-desc">' + esc(item.descricao) + '</p>' : '') +
-          (tags.length ? '<div class="item-tags">' + tags.map(function (t) { return '<span class="item-tag">' + t + '</span>'; }).join('') + '</div>' : '') +
-        '</div>' +
-        '<button type="button" class="item-add" data-add="' + item.id + '" aria-label="Adicionar ' + esc(item.nome) + '">' + U.ICONES.mais + '</button>' +
-      '</article>'
-    );
+  function cartaoItem(attrs, nome, preco, desc, extra, foto, busca, botao) {
+    return '<article class="item-card' + (foto ? ' com-foto' : '') + '" ' + attrs + ' tabindex="0"' + (busca ? ' data-busca="' + esc(busca.toLowerCase()) + '"' : '') + '>' +
+      (foto ? '<div class="item-img">' + foto + '</div>' : '') +
+      '<div class="item-corpo">' +
+        '<div class="item-topo"><h3 class="item-nome">' + esc(nome) + '</h3><span class="item-leader"></span>' +
+          (preco ? '<span class="item-preco">' + preco + '</span>' : '') + '</div>' +
+        (desc ? '<p class="item-desc">' + esc(desc) + '</p>' : '') +
+        (extra ? '<p class="item-extra">' + extra + '</p>' : '') +
+      '</div>' + (botao || '') + '</article>';
+  }
+
+  function extrasDoItem(item) {
+    var extras = [];
+    if (item.permite_meio_a_meio && elegiveisMeio().length > 1) extras.push('Aceita meio a meio');
+    if (aceitaBorda(item)) extras.push(extras.length ? 'borda recheada' : 'Borda recheada');
+    return extras.join(' · ');
+  }
+
+  function renderItemCard(item, semExtras) {
+    return cartaoItem('data-item="' + item.id + '"', item.nome, U.precoOuCombinar(item.preco), item.descricao, semExtras ? '' : extrasDoItem(item),
+      fotoOuMono(item, 'item-foto'), item.nome + ' ' + (item.descricao || ''),
+      '<button type="button" class="item-add" data-add="' + item.id + '" aria-label="Adicionar ' + esc(item.nome) + '">Adicionar</button>');
   }
 
   function renderizarEspeciais() {
     var html = '';
-    var elegiveis = elegiveisMeio();
-    if (elegiveis.length > 1) {
-      html += '<div class="especial-card" data-meio="1" role="button" tabindex="0">' +
-        '<span class="especial-icone">' + U.ICONES.metade + '</span>' +
-        '<div class="especial-texto"><div class="especial-titulo">Monte sua meio a meio</div>' +
-        '<div class="especial-sub">Dois sabores, você paga pelo mais caro</div></div></div>';
+    if (elegiveisMeio().length > 1) {
+      html += cartaoItem('data-meio="1" role="button"', 'Monte sua meio a meio', '', 'Dois sabores na mesma pizza. Você paga pelo mais caro.', '', '', '', '').replace('item-card', 'item-card especial');
     }
     cardapio.combos.forEach(function (co) {
-      html += '<div class="especial-card" data-combo="' + co.id + '" role="button" tabindex="0">' +
-        '<span class="especial-icone">' + U.ICONES.combo + '</span>' +
-        '<div class="especial-texto"><div class="especial-titulo">' + esc(co.nome) + '</div>' +
-        '<div class="especial-sub">Escolha ' + co.qtd_sabores + ' ' + (co.qtd_sabores > 1 ? 'sabores' : 'sabor') + '</div></div>' +
-        '<span class="especial-preco">' + U.preco(co.preco) + '</span></div>';
+      html += cartaoItem('data-combo="' + co.id + '" role="button"', co.nome, U.preco(co.preco), 'Escolha ' + co.qtd_sabores + ' ' + (co.qtd_sabores > 1 ? 'sabores' : 'sabor') + '.', '', '', '', '').replace('item-card', 'item-card especial');
     });
-    return html ? '<section class="secao-especial" id="secaoEspeciais"><h2 class="cardapio-categoria-titulo" id="catg-especiais" style="margin-top:0.4rem">Combos e montagem</h2>' + html + '</section>' : '';
+    return html ? '<section class="secao-especial" id="secaoEspeciais"><h2 class="cardapio-categoria-titulo" id="catg-especiais">Combos e montagem</h2><div class="item-lista">' + html + '</div></section>' : '';
   }
 
   function renderizarCardapio() {
@@ -265,9 +276,14 @@
 
     var html = renderizarEspeciais();
     html += grupos.map(function (g) {
+      // se todo item da categoria aceita a mesma coisa, avisa uma vez só
+      var comum = extrasDoItem(g.lista[0]);
+      var todos = g.lista.length > 1 && comum && g.lista.every(function (i) { return extrasDoItem(i) === comum; });
+      var nota = todos ? (comum === 'Aceita meio a meio · borda recheada' ? 'Todas aceitam meio a meio e borda recheada' : comum) : '';
       return '<section class="grupo-cardapio" data-grupo="' + g.id + '">' +
         '<h2 class="cardapio-categoria-titulo" id="catg-' + g.id + '">' + esc(g.nome) + '</h2>' +
-        '<div class="item-lista">' + g.lista.map(renderItemCard).join('') + '</div></section>';
+        (nota ? '<p class="categoria-nota">' + nota + '</p>' : '') +
+        '<div class="item-lista">' + g.lista.map(function (i) { return renderItemCard(i, todos); }).join('') + '</div></section>';
     }).join('');
     $('cardapioConteudo').innerHTML = html;
 
@@ -286,12 +302,12 @@
     document.querySelectorAll('.item-card[data-item]').forEach(function (card) {
       var n = contagem[card.getAttribute('data-item')] || 0;
       card.classList.toggle('no-carrinho', n > 0);
-      var bolha = card.querySelector('.item-qtd-bolha');
+      var marca = card.querySelector('.item-qtd');
       if (n > 0) {
-        if (!bolha) { bolha = document.createElement('span'); bolha.className = 'item-qtd-bolha'; card.appendChild(bolha); }
-        bolha.textContent = n;
-      } else if (bolha) {
-        bolha.remove();
+        if (!marca) { marca = document.createElement('span'); marca.className = 'item-qtd'; card.querySelector('.item-nome').prepend(marca); }
+        marca.textContent = n + '×';
+      } else if (marca) {
+        marca.remove();
       }
     });
   }
@@ -1029,7 +1045,6 @@
         if (!item) return;
         if (temOpcoes(item)) { abrirItem(item.id); return; }
         adicionarAoCarrinho({ tipo: 'item', item_id: item.id, meio_item_id: null, borda_id: null, qtd: 1, obs: '', descricao: item.nome, preco: Number(item.preco) });
-        add.classList.remove('pulso'); void add.offsetWidth; add.classList.add('pulso');
         U.toast(item.nome + ' no pedido');
         return;
       }
@@ -1132,7 +1147,7 @@
     if (MODO_PREVIEW) {
       window.addEventListener('message', function (ev) {
         if (ev.origin !== location.origin || !ev.data) return;
-        if (ev.data.tipo === 'vb-tpl') T.aplicar(ev.data.template, ev.data.cor);
+        if (ev.data.tipo === 'vb-tpl') T.aplicar(ev.data.template, ev.data.cor, ev.data.layout);
         if (ev.data.tipo === 'vb-recarregar') location.reload();
       });
     }

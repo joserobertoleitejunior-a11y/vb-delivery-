@@ -998,11 +998,22 @@
   }
 
   /* ---------- aparência ---------- */
-  var CORES = ['#ff7a3d', '#e63946', '#8c1c2b', '#d4af6a', '#2f9e44', '#0ea5e9', '#7c5cff', '#ff2e88', '#111827'];
+  // cores de marca reais (tijolo, molho, âmbar, folha, verde-água, marinho, açaí, café, preto)
+  var CORES = ['#b23a28', '#9b2d20', '#d9822b', '#2f6a35', '#1f7a6d', '#23395b', '#5a1f66', '#6b4226', '#1d1c1a'];
   var aparenciaMontada = false;
 
   function templateAtual() { return rascunho.template || loja.template; }
   function corAtual() { return 'cor_destaque' in rascunho ? rascunho.cor_destaque : loja.cor_destaque; }
+  function layoutAtual() { return ('layout' in rascunho ? rascunho.layout : loja.layout) || T.obter(templateAtual()).layout; }
+  function srcMiniatura(seg, tpl) { return '/perfil.html?demo=' + seg + '&tpl=' + tpl + '&layout=' + layoutAtual() + '&mini=1'; }
+
+  function renderizarLayouts() {
+    var atual = layoutAtual();
+    $('gradeLayouts').innerHTML = T.layouts.map(function (l) {
+      return '<button type="button" class="layout-op' + (l.chave === atual ? ' ativo' : '') + '" data-layout="' + l.chave + '">' +
+        T.desenhoLayout(l.chave) + '<span><strong>' + esc(l.nome) + '</strong><small>' + esc(l.descricao) + '</small></span></button>';
+    }).join('');
+  }
 
   function montarAparencia(forcar) {
     if (aparenciaMontada && !forcar) return;
@@ -1011,11 +1022,11 @@
     var seg = window.VBDemo && VBDemo.segmentos.indexOf(loja.segmento) !== -1 ? loja.segmento : 'pizzaria';
     $('gradeTemplates').innerHTML = T.lista.map(function (t) {
       return '<button type="button" class="tpl-card' + (t.chave === templateAtual() ? ' ativo' : '') + '" data-tpl="' + t.chave + '">' +
-        '<span class="tpl-marca">' + U.ICONES.check + '</span>' +
-        '<div class="tpl-janela"><iframe loading="lazy" tabindex="-1" title="Prévia ' + esc(t.nome) + '" data-src="/perfil.html?demo=' + seg + '&tpl=' + t.chave + '&mini=1"></iframe></div>' +
+        '<div class="tpl-janela"><iframe loading="lazy" tabindex="-1" title="Prévia ' + esc(t.nome) + '" data-src="' + srcMiniatura(seg, t.chave) + '"></iframe></div>' +
         '<div class="tpl-rotulo"><strong>' + esc(t.nome) + '</strong><small>' + esc(t.descricao) + '</small></div></button>';
     }).join('');
     ajustarMiniaturas();
+    renderizarLayouts();
     renderizarCores();
     var prev = $('previewReal');
     if (!$('abaLoja').classList.contains('oculto')) {
@@ -1039,14 +1050,14 @@
     var atual = corAtual();
     var t = T.obter(templateAtual());
     $('cores').innerHTML =
-      '<button type="button" class="cor-opcao padrao' + (!atual ? ' ativo' : '') + '" data-cor="" title="Cor do template (' + esc(t.nome) + ')" aria-label="Cor padrão do template"></button>' +
+      '<button type="button" class="cor-opcao padrao' + (!atual ? ' ativo' : '') + '" data-cor="" style="background:' + t.t.accent + '" title="Cor do estilo ' + esc(t.nome) + '" aria-label="Cor do próprio estilo"><span>padrão</span></button>' +
       CORES.map(function (c) { return '<button type="button" class="cor-opcao' + (atual === c ? ' ativo' : '') + '" data-cor="' + c + '" style="background:' + c + '" aria-label="Cor ' + c + '"></button>'; }).join('') +
-      '<input type="color" class="cor-custom" id="corCustom" value="' + (atual || t.cor) + '" aria-label="Escolher outra cor" title="Escolher outra cor">';
+      '<input type="color" class="cor-custom" id="corCustom" value="' + (atual || t.t.accent) + '" aria-label="Escolher outra cor" title="Escolher outra cor">';
   }
 
   function enviarPreview() {
     var f = $('previewReal');
-    if (f && f.contentWindow) f.contentWindow.postMessage({ tipo: 'vb-tpl', template: templateAtual(), cor: corAtual() }, location.origin);
+    if (f && f.contentWindow) f.contentWindow.postMessage({ tipo: 'vb-tpl', template: templateAtual(), cor: corAtual(), layout: layoutAtual() }, location.origin);
   }
   function recarregarPreview() {
     var f = $('previewReal');
@@ -1062,8 +1073,24 @@
       atualizarBarraSalvar();
       document.querySelectorAll('.tpl-card').forEach(function (c) { c.classList.toggle('ativo', c === card); });
       renderizarCores();
+      renderizarLayouts();
       enviarPreview();
       $('previewReal').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    $('gradeLayouts').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-layout]');
+      if (!b) return;
+      var chave = b.getAttribute('data-layout');
+      if (chave === (loja.layout || null)) delete rascunho.layout; else rascunho.layout = chave;
+      atualizarBarraSalvar();
+      renderizarLayouts();
+      var seg = window.VBDemo && VBDemo.segmentos.indexOf(loja.segmento) !== -1 ? loja.segmento : 'pizzaria';
+      document.querySelectorAll('#gradeTemplates .tpl-card').forEach(function (c) {
+        var f = c.querySelector('iframe');
+        var src = srcMiniatura(seg, c.getAttribute('data-tpl'));
+        if (f.hasAttribute('data-src')) f.setAttribute('data-src', src); else f.src = src;
+      });
+      enviarPreview();
     });
     $('cores').addEventListener('click', function (e) {
       var b = e.target.closest('[data-cor]');
@@ -1172,7 +1199,7 @@
     var passos = [
       ['Monte o cardápio', 'Crie categorias e itens com foto e preço.', 'cardapio'],
       ['Configure entrega e horários', 'Taxa, pedido mínimo, formas de pagamento e quando abre.', 'loja'],
-      ['Escolha o visual', '7 templates com prévia ao vivo, e a cor da sua marca.', 'loja'],
+      ['Escolha o visual', '9 estilos e 4 jeitos de montar o cardápio, com a cor da sua marca.', 'loja'],
       ['Divulgue o link', 'Copie, compartilhe ou imprima o QR Code no balcão.', 'loja']
     ];
     abrirSheet('Sua loja está no ar!',

@@ -19,25 +19,39 @@ Um terceiro app (VB Orçamentos — quem vai até a casa do cliente fazer orçam
 |---|---|---|
 | `/` | `index.html` + `home.js` | Catálogo das lojas pro cliente + vitrine pro lojista |
 | `/:loja/:cidade` | `perfil.html` + `perfil.js` | Site da loja: cardápio, carrinho, checkout, acompanhar pedido |
-| `/criar.html` | `criar.js` | Criação em 4 passos (conta, negócio, link, visual) |
+| `/criar.html` | `criar.js` | Criação em 4 passos (conta, negócio, link, estilo + layout) |
 | `/cadastro.html` | `cadastro.js` | Painel: Pedidos (Caixa), Cardápio, Loja, Resumo |
 
 `_worker.js` faz o roteamento no Cloudflare Workers (mesmo esquema do vb-espaco).
 
-## Templates
+## Visual do site da loja
 
-Estrutura única (`assets/css/base.css`) e cada template só troca tokens, fontes e ornamentos (`assets/tpl/<chave>.css`, registro em `assets/js/templates.js`):
+Duas escolhas separadas, feitas no painel (aba Loja → Aparência) ou na criação:
 
-- **Forno** — escuro e quente, brasas subindo, letreiro Bangers
-- **Clássico** — cardápio impresso: papel creme, bordô, dourado, pontilhado nome→preço
-- **Noir** — preto e dourado champanhe, título com brilho metálico
-- **Vidro** — transparente: vidro fosco sobre aurora colorida em movimento
-- **Feira** — claro, verde folha e limão, preço em etiqueta
-- **Patinhas** — petshop, lilás e menta, patinhas no fundo
-- **Neon** — letreiro neon piscando e grade retrô
-- **Asfalto** — borracharia: asfalto, amarelo de sinalização, faixa zebrada
+**Estilo** — paleta e letra (`assets/js/templates.js` aplica os tokens; nada de degradê, brilho ou vidro):
 
-A cor de destaque escolhida pelo dono calcula sozinha o contraste do texto. Prévia ao vivo de qualquer template: `/perfil.html?demo=<segmento>&tpl=<chave>`.
+- **Simples** — branco, letra do sistema e a cor da marca
+- **Cantina** — papel de cardápio, Alegreya, vermelho de molho
+- **Carvão** — escuro de chapa, Oswald em caixa alta, âmbar
+- **Nanquim** — preto de tinta, Cormorant, vermelho de carimbo
+- **Feira** — placa de hortifruti, verde folha, Barlow Condensed
+- **Kraft** — papel kraft de padaria, Zilla Slab, terracota
+- **Patinhas** — petshop, claro e redondo (Nunito), verde-água
+- **Açaí** — roxo de açaí sobre creme, Fredoka
+- **Asfalto** — borracharia: preto, amarelo de placa, faixa de sinalização
+
+**Layout** — como o cardápio é montado (`html[data-layout]` no `base.css`):
+
+- **Lista** — um embaixo do outro, foto pequena do lado
+- **Grade** — dois por linha, foto em cima (três no computador)
+- **Cardápio** — como o impresso da mesa: nome, pontilhado e preço, sem foto
+- **Vitrine** — capa de ponta a ponta com o topo transparente, foto grande de cada item
+
+Cada estilo tem um layout sugerido; a cor de destaque escolhida pelo dono calcula sozinha o contraste do texto. Prévia de qualquer combinação: `/perfil.html?demo=<segmento>&tpl=<estilo>&layout=<layout>`.
+
+## Visual do app
+
+Início, criação e painel usam o mesmo visual do VB Agenda (letra do sistema, fundo linho com a moldura clarinha, topo branco, cartão com borda fina, botão redondo, barra de baixo). Só a cor da marca muda: vermelho tijolo `#B23A28` no lugar do verde do Agenda. Fica em `assets/css/marca.css`.
 
 ## Pedido
 
@@ -62,7 +76,7 @@ Pra outro nicho de serviço no local (chaveiro, guincho, eletricista), é só in
 - **Pedidos (Caixa)**: chega sozinho com som/vibração, aceitar → saiu/pronto → concluir, cancelar, WhatsApp do cliente, abrir/fechar a loja na hora.
 - **Impressora térmica**: Bluetooth (Web Bluetooth), app RawBT no Android (Bluetooth comum), cabo USB/serial (Web Serial) ou qualquer impressora pelo navegador; 58/80 mm; impressão automática.
 - **Cardápio**: itens com foto (compressão + Storage `delivery-fotos/<uid>/…`), disponível/esgotado num toque, categorias com ordem, bordas, combos.
-- **Loja**: link, compartilhar, QR Code, capa/logo, entrega, pagamento/Pix, horários, template + cor com prévia do site real.
+- **Loja**: link, compartilhar, QR Code, capa/logo, entrega, pagamento/Pix, horários, estilo + layout + cor com prévia do site real.
 - **Resumo**: hoje, 7/30/90 dias, ticket médio, gráfico por dia, mais vendidos.
 
 ## Publicar (Cloudflare)
